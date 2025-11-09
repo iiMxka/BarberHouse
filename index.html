@@ -13,11 +13,13 @@
 </head>
 <body>
     <header>
-        <h1>Estudio Barber House</h1>
-        <nav>
-            <a href="#servicios">Servicios</a>
-            <a href="#contacto">Contacto</a>
-        </nav>
+        <div class="header-contenedor">
+            <h1>Estudio Barber House</h1>
+            <nav>
+                <a href="#servicios">Servicios</a>
+                <a href="#contacto">Contacto</a>
+            </nav>
+        </div>
     </header>
 
     <section id="inicio" class="hero">
@@ -96,7 +98,7 @@
 </section>
 
 <script>
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbw8Q1KrjqBoOofNADhHd-jdkl5eoHrKGp11sSD4cJQ6TutG7ORjao8yHxkrLFaxH8mVxg/exec"; // ← remplázalo por tu URL de Google Apps Script
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbzWxWXF_K6SsCgtNEh4U1EJ0aCq2TZ4IswsqyxRMhscJPIiade4t94ClUCrcPM5ESx4MQ/exec";
 
 async function cargarHoras() {
   const fecha = document.getElementById("fecha").value;
@@ -105,25 +107,30 @@ async function cargarHoras() {
 
   if (!fecha) return;
 
-  const res = await fetch(`${SHEET_URL}?fecha=${fecha}`);
-  const horasOcupadas = await res.json();
+  try {
+    const res = await fetch(`${SHEET_URL}?fecha=${fecha}`);
+    const horasOcupadas = await res.json();
 
-  const horas = [
-    "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
-    "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"
-  ];
+    const horas = [
+      "11:00 AM","12:00 PM","1:00 PM","2:00 PM","3:00 PM",
+      "4:00 PM","5:00 PM","6:00 PM","7:00 PM"
+    ];
 
-  selectHora.innerHTML = "";
-  horas.forEach(h => {
-    const option = document.createElement("option");
-    option.value = h;
-    option.textContent = h;
-    if (horasOcupadas.includes(h)) {
-      option.disabled = true;
-      option.textContent += " (Ocupado)";
-    }
-    selectHora.appendChild(option);
-  });
+    selectHora.innerHTML = "";
+    horas.forEach(h => {
+      const option = document.createElement("option");
+      option.value = h;
+      option.textContent = h;
+      if (horasOcupadas.includes(h)) {
+        option.disabled = true;
+        option.textContent += " (Ocupado)";
+      }
+      selectHora.appendChild(option);
+    });
+  } catch(err) {
+    console.error("Error al cargar las horas:", err);
+    selectHora.innerHTML = "<option value=''>Error al cargar horas</option>";
+  }
 }
 
 document.getElementById("fecha").addEventListener("change", cargarHoras);
@@ -139,13 +146,17 @@ document.getElementById("formCita").addEventListener("submit", async e => {
   };
 
   document.getElementById("estado").textContent = "Enviando...";
-  const res = await fetch(SHEET_URL, {
-    method: "POST",
-    body: JSON.stringify(data)
-  });
-
-  const text = await res.text();
-  document.getElementById("estado").textContent = text.includes("OK") ? 
-    "✅ Cita registrada con éxito" : "❌ Error al registrar la cita";
+  try {
+    const res = await fetch(SHEET_URL, {
+      method: "POST",
+      body: JSON.stringify(data)
+    });
+    const text = await res.text();
+    document.getElementById("estado").textContent = text.includes("OK") ? 
+      "✅ Cita registrada con éxito" : "❌ Error al registrar la cita";
+  } catch(err) {
+    document.getElementById("estado").textContent = "❌ Error al registrar la cita";
+    console.error(err);
+  }
 });
 </script>
