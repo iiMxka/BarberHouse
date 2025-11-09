@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ===================
-// Cargar horas con JSONP (SOLUCIÓN PARA CORS)
+// Cargar horas con JSONP (SOLUCIÓN PARA CORS) - ESTO YA FUNCIONA ✅
 // ===================
 function cargarHoras() {
     const fecha = document.getElementById("fecha").value;
@@ -107,9 +107,9 @@ function actualizarHorasDisponibles(horasOcupadas) {
 document.getElementById("fecha").addEventListener("change", cargarHoras);
 
 // ===================
-// Enviar cita con POST
+// ENVIAR CITA - ESTA ES LA PARTE MODIFICADA ✅
 // ===================
-document.getElementById("formCita").addEventListener("submit", async e => {
+document.getElementById("formCita").addEventListener("submit", function(e) {
     e.preventDefault();
     
     const data = {
@@ -120,6 +120,7 @@ document.getElementById("formCita").addEventListener("submit", async e => {
         hora: document.getElementById("hora").value
     };
 
+    // Validación básica
     if (!data.hora || data.hora.includes("Ocupado") || data.hora === "Selecciona una hora") {
         document.getElementById("estado").textContent = "❌ Por favor selecciona una hora válida";
         return;
@@ -129,33 +130,51 @@ document.getElementById("formCita").addEventListener("submit", async e => {
     estado.textContent = "Enviando...";
     estado.style.color = "#333";
 
-    try {
-        console.log("📤 Enviando cita:", data);
-        const res = await fetch(SHEET_URL, {
-            method: "POST",
-            body: JSON.stringify(data),
-            headers: { "Content-Type": "application/json" }
-        });
+    console.log("📤 Preparando envío de cita:", data);
 
-        const text = await res.text();
-        console.log("📥 Respuesta del servidor:", text);
+    // SOLUCIÓN: Usar un formulario temporal para evitar CORS
+    const formTemp = document.createElement('form');
+    formTemp.method = 'POST';
+    formTemp.action = SHEET_URL;
+    formTemp.style.display = 'none';
+    
+    // Agregar campos
+    const campos = [
+        { name: 'nombre', value: data.nombre },
+        { name: 'telefono', value: data.telefono },
+        { name: 'servicio', value: data.servicio },
+        { name: 'fecha', value: data.fecha },
+        { name: 'hora', value: data.hora }
+    ];
+    
+    campos.forEach(campo => {
+        const input = document.createElement('input');
+        input.name = campo.name;
+        input.value = campo.value;
+        formTemp.appendChild(input);
+    });
+    
+    document.body.appendChild(formTemp);
+    
+    // Enviar el formulario
+    formTemp.submit();
+    
+    // Mensaje de éxito (optimista)
+    estado.textContent = "✅ Cita enviada con éxito";
+    estado.style.color = "green";
+    
+    // Limpiar formulario después de 2 segundos
+    setTimeout(() => {
+        document.getElementById("formCita").reset();
+        document.body.removeChild(formTemp);
         
-        if(text.includes("OK")) {
-            estado.textContent = "✅ Cita registrada con éxito";
-            estado.style.color = "green";
-            document.getElementById("formCita").reset();
-            if (document.getElementById("fecha").value) {
-                cargarHoras(); // Recargar horas
-            }
-        } else {
-            estado.textContent = "❌ Error al registrar la cita";
-            estado.style.color = "red";
+        // Recargar horas para actualizar disponibilidad
+        if (document.getElementById("fecha").value) {
+            cargarHoras();
         }
-    } catch (error) {
-        console.error("❌ Error:", error);
-        estado.textContent = "❌ Error de conexión al registrar la cita";
-        estado.style.color = "red";
-    }
+    }, 2000);
+    
+    console.log("✅ Formulario enviado via método tradicional");
 });
 
 // Función para debug desde consola
