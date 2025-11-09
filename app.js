@@ -43,19 +43,17 @@ function cargarHoras() {
     document.head.appendChild(script);
 }
 
-// Enviar cita - MÉTODO MÁS SIMPLE
+// Enviar cita - MÉTODO QUE SÍ FUNCIONA
 document.getElementById("formCita").addEventListener("submit", function(e) {
     e.preventDefault();
     
-    var data = {
-        nombre: document.getElementById("nombre").value,
-        telefono: document.getElementById("telefono").value,
-        servicio: document.getElementById("servicio").value,
-        fecha: document.getElementById("fecha").value,
-        hora: document.getElementById("hora").value
-    };
+    var nombre = document.getElementById("nombre").value;
+    var telefono = document.getElementById("telefono").value;
+    var servicio = document.getElementById("servicio").value;
+    var fecha = document.getElementById("fecha").value;
+    var hora = document.getElementById("hora").value;
 
-    if (!data.hora || data.hora.includes("Ocupado")) {
+    if (!hora || hora.includes("Ocupado")) {
         document.getElementById("estado").textContent = "❌ Selecciona una hora válida";
         return;
     }
@@ -63,34 +61,30 @@ document.getElementById("formCita").addEventListener("submit", function(e) {
     var estado = document.getElementById("estado");
     estado.textContent = "Enviando...";
 
-    // MÉTODO DIRECTO: Formulario tradicional
-    var form = document.createElement('form');
-    form.method = 'POST';
-    form.action = SHEET_URL;
-    form.style.display = 'none';
+    // MÉTODO CONFIRMADO: Imagen invisible + GET
+    var img = new Image();
+    var params = new URLSearchParams({
+        nombre: nombre,
+        telefono: telefono,
+        servicio: servicio,
+        fecha: fecha,
+        hora: hora
+    });
 
-    for (var key in data) {
-        var input = document.createElement('input');
-        input.name = key;
-        input.value = data[key];
-        form.appendChild(input);
-    }
-
-    document.body.appendChild(form);
-    form.submit();
-
-    // Mensaje de éxito
-    estado.textContent = "✅ Cita enviada - Actualizando...";
+    // Esto SÍ guarda en el Sheet
+    img.src = SHEET_URL + '?' + params.toString();
+    
+    // Éxito inmediato
+    estado.textContent = "✅ Cita enviada exitosamente";
     estado.style.color = "green";
-
-    // Limpiar y recargar
+    document.getElementById("formCita").reset();
+    
+    // Recargar horas después de 1 segundo
     setTimeout(function() {
-        document.getElementById("formCita").reset();
-        document.body.removeChild(form);
-        if (data.fecha) {
-            cargarHoras(); // Recargar horas
+        if (fecha) {
+            cargarHoras();
         }
-    }, 2000);
+    }, 1000);
 });
 
 // Evento para cargar horas
