@@ -236,6 +236,20 @@ document.getElementById("formCita").addEventListener("submit", async e => {
         estado.style.color = "red";
     }
 });
+// Agrega esta función temporal para debug
+function debugCargaHoras() {
+    const fecha = document.getElementById("fecha").value;
+    console.log("Fecha seleccionada:", fecha);
+    
+    // Test directo
+    fetch(`${SHEET_URL}?fecha=${fecha}`)
+        .then(r => r.json())
+        .then(horas => console.log("Horas ocupadas:", horas))
+        .catch(err => console.error("Error fetch:", err));
+}
+
+// Llama a esta función desde la consola del navegador para probar
+    
 </script>
 </body>
 </html>
