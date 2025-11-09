@@ -77,35 +77,27 @@
         <a href="https://wa.me/573122860382" class="boton">Agendar por WhatsApp</a>
     </section>
 
-    <!-- === NUEVA SECCIÓN: FORMULARIO DE AGENDA === -->
+    <!-- === NUEVO FORMULARIO ELEGANTE === -->
     <section id="agendar" class="formulario-cita">
         <h2>Agendar Cita</h2>
-        <p>Completa tus datos y agenda tu cita directamente por WhatsApp 📅</p>
+        <p>Escribe tus datos, el servicio y la hora deseada. Luego envía por WhatsApp 💈</p>
 
         <form id="formCita">
-            <input type="text" id="nombre" placeholder="Tu nombre" required>
-            <input type="date" id="fecha" required>
-            <input type="time" id="hora" required>
-            <button type="submit">Enviar por WhatsApp</button>
+            <textarea id="mensaje" placeholder="Ejemplo: Hola, soy Andrés. Quiero un corte y barba el viernes a las 3:00 PM." required></textarea>
+            <button type="submit"><i class="fa-brands fa-whatsapp"></i> Enviar por WhatsApp</button>
         </form>
     </section>
-    <!-- === FIN FORMULARIO === -->
 
     <footer>
         <p>© 2025 Estudio Barber House. Todos los derechos reservados.</p>
     </footer>
 
-    <!-- === SCRIPT: FORMULARIO WHATSAPP === -->
     <script>
       document.getElementById('formCita').addEventListener('submit', function(e) {
         e.preventDefault();
 
-        const nombre = document.getElementById('nombre').value;
-        const fecha = document.getElementById('fecha').value;
-        const hora = document.getElementById('hora').value;
-        const telefono = '573122860382'; // tu número
-
-        const mensaje = `Hola, soy ${nombre}. Quiero agendar una cita para el ${fecha} a las ${hora}.`;
+        const mensaje = document.getElementById('mensaje').value;
+        const telefono = '573122162605';
         const url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
 
         window.open(url, '_blank');
@@ -113,4 +105,3 @@
     </script>
 </body>
 </html>
-
