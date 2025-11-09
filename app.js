@@ -7,14 +7,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const fechaInput = document.getElementById("fecha");
     const hoy = new Date().toISOString().split('T')[0];
     fechaInput.min = hoy;
+    console.log("✅ Página cargada - Fecha mínima establecida:", hoy);
 });
 
 // ===================
-// Cargar horas CON FETCH (más confiable)
+// Cargar horas CON FETCH
 // ===================
 async function cargarHoras() {
     const fecha = document.getElementById("fecha").value;
     const selectHora = document.getElementById("hora");
+    
+    console.log("📅 Intentando cargar horas para fecha:", fecha);
     
     if (!fecha) {
         selectHora.innerHTML = "<option value=''>Primero selecciona una fecha</option>";
@@ -24,14 +27,19 @@ async function cargarHoras() {
     selectHora.innerHTML = "<option value=''>Cargando horas...</option>";
 
     try {
+        console.log("🌐 Haciendo petición a:", `${SHEET_URL}?fecha=${fecha}`);
         const response = await fetch(`${SHEET_URL}?fecha=${fecha}`);
-        if (!response.ok) throw new Error(`Error: ${response.status}`);
+        
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
+        }
         
         const horasOcupadas = await response.json();
+        console.log("✅ Horas ocupadas recibidas:", horasOcupadas);
         actualizarHorasDisponibles(horasOcupadas);
         
     } catch (error) {
-        console.error("Error cargando las horas disponibles:", error);
+        console.error("❌ Error cargando las horas disponibles:", error);
         selectHora.innerHTML = "<option value=''>Error al cargar horas</option>";
     }
 }
@@ -45,6 +53,8 @@ function actualizarHorasDisponibles(horasOcupadas) {
     
     selectHora.innerHTML = "<option value=''>Selecciona una hora</option>";
     
+    let horasDisponiblesCount = 0;
+    
     horasDisponibles.forEach(hora => {
         const option = document.createElement("option");
         option.value = hora;
@@ -56,15 +66,19 @@ function actualizarHorasDisponibles(horasOcupadas) {
             option.style.color = "#999";
         } else {
             option.textContent = hora;
+            horasDisponiblesCount++;
         }
         selectHora.appendChild(option);
     });
     
-    if (selectHora.options.length === 1) {
+    if (horasDisponiblesCount === 0) {
         selectHora.innerHTML = "<option value=''>No hay horas disponibles</option>";
     }
+    
+    console.log(`🕒 ${horasDisponiblesCount} horas disponibles de ${horasDisponibles.length}`);
 }
 
+// Evento al cambiar la fecha
 document.getElementById("fecha").addEventListener("change", cargarHoras);
 
 // ===================
@@ -91,6 +105,7 @@ document.getElementById("formCita").addEventListener("submit", async e => {
     estado.style.color = "#333";
 
     try {
+        console.log("📤 Enviando cita:", data);
         const res = await fetch(SHEET_URL, {
             method: "POST",
             body: JSON.stringify(data),
@@ -98,6 +113,8 @@ document.getElementById("formCita").addEventListener("submit", async e => {
         });
 
         const text = await res.text();
+        console.log("📥 Respuesta del servidor:", text);
+        
         if(text.includes("OK")) {
             estado.textContent = "✅ Cita registrada con éxito";
             estado.style.color = "green";
@@ -108,8 +125,27 @@ document.getElementById("formCita").addEventListener("submit", async e => {
             estado.style.color = "red";
         }
     } catch (error) {
-        console.error("Error:", error);
+        console.error("❌ Error:", error);
         estado.textContent = "❌ Error de conexión al registrar la cita";
         estado.style.color = "red";
     }
 });
+
+// Función para debug desde consola
+window.debugCargaHoras = function() {
+    const fecha = document.getElementById("fecha").value;
+    console.log("🔧 Debug - Fecha seleccionada:", fecha);
+    
+    if (!fecha) {
+        console.log("❌ No hay fecha seleccionada");
+        return;
+    }
+    
+    fetch(`${SHEET_URL}?fecha=${fecha}`)
+        .then(r => {
+            console.log("📡 Status de respuesta:", r.status, r.statusText);
+            return r.json();
+        })
+        .then(horas => console.log("📊 Horas ocupadas:", horas))
+        .catch(err => console.error("💥 Error fetch:", err));
+};
