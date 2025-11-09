@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ===================
-// Cargar horas con JSONP (funciona con CORS)
+// Cargar horas con JSONP (SOLUCIÓN PARA CORS)
 // ===================
 function cargarHoras() {
     const fecha = document.getElementById("fecha").value;
@@ -25,24 +25,40 @@ function cargarHoras() {
     }
 
     selectHora.innerHTML = "<option value=''>Cargando horas...</option>";
+    console.log("🔄 Creando petición JSONP...");
 
-    // Crear callback único
-    const callbackName = 'callback_' + new Date().getTime();
+    // Crear callback único para JSONP
+    const callbackName = 'procesarHoras_' + Date.now();
+    
+    // Definir la función callback
     window[callbackName] = function(horasOcupadas) {
-        console.log("✅ JSONP - Horas recibidas:", horasOcupadas);
+        console.log("✅ JSONP - Respuesta recibida:", horasOcupadas);
         actualizarHorasDisponibles(horasOcupadas);
+        // Limpiar
         delete window[callbackName];
+        if (script.parentNode) {
+            script.parentNode.removeChild(script);
+        }
     };
 
-    // Crear script para JSONP
+    // Crear elemento script para JSONP
     const script = document.createElement('script');
-    script.src = `${SHEET_URL}?fecha=${fecha}&callback=${callbackName}`;
+    const url = `${SHEET_URL}?fecha=${encodeURIComponent(fecha)}&callback=${callbackName}`;
+    script.src = url;
+    
+    console.log("🌐 JSONP URL:", url);
+    
+    // Manejar errores
     script.onerror = function() {
         console.error("❌ JSONP - Error cargando el script");
         selectHora.innerHTML = "<option value=''>Error al cargar horas</option>";
         delete window[callbackName];
+        if (script.parentNode) {
+            script.parentNode.removeChild(script);
+        }
     };
     
+    // Agregar el script al DOM (esto ejecuta la petición)
     document.head.appendChild(script);
 }
 
@@ -53,6 +69,7 @@ function actualizarHorasDisponibles(horasOcupadas) {
         "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM"
     ];
     
+    console.log("🔄 Actualizando horas disponibles...");
     selectHora.innerHTML = "<option value=''>Selecciona una hora</option>";
     
     let horasDisponiblesCount = 0;
@@ -60,31 +77,37 @@ function actualizarHorasDisponibles(horasOcupadas) {
     horasDisponibles.forEach(hora => {
         const option = document.createElement("option");
         option.value = hora;
+        
+        // Verificar si la hora está ocupada
         const ocupada = Array.isArray(horasOcupadas) && horasOcupadas.includes(hora);
         
         if (ocupada) {
             option.disabled = true;
             option.textContent = hora + " (Ocupado)";
             option.style.color = "#999";
+            console.log(`⏰ ${hora} - OCUPADA`);
         } else {
             option.textContent = hora;
             horasDisponiblesCount++;
+            console.log(`⏰ ${hora} - DISPONIBLE`);
         }
+        
         selectHora.appendChild(option);
     });
     
     if (horasDisponiblesCount === 0) {
         selectHora.innerHTML = "<option value=''>No hay horas disponibles</option>";
+        console.log("📭 No hay horas disponibles para esta fecha");
+    } else {
+        console.log(`🎯 ${horasDisponiblesCount} horas disponibles de ${horasDisponibles.length}`);
     }
-    
-    console.log(`🕒 ${horasDisponiblesCount} horas disponibles`);
 }
 
 // Evento al cambiar la fecha
 document.getElementById("fecha").addEventListener("change", cargarHoras);
 
 // ===================
-// Enviar cita con POST (esto SÍ funciona con CORS)
+// Enviar cita con POST
 // ===================
 document.getElementById("formCita").addEventListener("submit", async e => {
     e.preventDefault();
@@ -121,7 +144,9 @@ document.getElementById("formCita").addEventListener("submit", async e => {
             estado.textContent = "✅ Cita registrada con éxito";
             estado.style.color = "green";
             document.getElementById("formCita").reset();
-            if (document.getElementById("fecha").value) cargarHoras();
+            if (document.getElementById("fecha").value) {
+                cargarHoras(); // Recargar horas
+            }
         } else {
             estado.textContent = "❌ Error al registrar la cita";
             estado.style.color = "red";
@@ -132,3 +157,9 @@ document.getElementById("formCita").addEventListener("submit", async e => {
         estado.style.color = "red";
     }
 });
+
+// Función para debug desde consola
+window.debugCargaHoras = function() {
+    console.log("🔧 Debug manual - Forzando carga de horas");
+    cargarHoras();
+};
