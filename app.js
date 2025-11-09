@@ -1,106 +1,135 @@
-const SHEET_NAME = "Citas Barberia";
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbwa5upKmZ6lHQXTVx14TbchtSw0qYUCsUapSAqzHJdEALx1fxhlpQTqFlcqnR42bRf_Cg/exec";
 
-function doGet(e) {
-  try {
-    console.log("🚀 doGet ejecutándose...");
+// ===================
+// Inicializar fecha mínima (hoy)
+// ===================
+document.addEventListener('DOMContentLoaded', function() {
+    const fechaInput = document.getElementById("fecha");
+    const hoy = new Date().toISOString().split('T')[0];
+    fechaInput.min = hoy;
+    console.log("✅ Página cargada - Fecha mínima establecida:", hoy);
+});
+
+// ===================
+// Cargar horas con JSONP (funciona con CORS)
+// ===================
+function cargarHoras() {
+    const fecha = document.getElementById("fecha").value;
+    const selectHora = document.getElementById("hora");
     
-    // Obtener la hoja de cálculo ACTIVA (donde está el script)
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    console.log("📊 Spreadsheet:", ss.getName());
+    console.log("📅 Intentando cargar horas para fecha:", fecha);
     
-    const sheet = ss.getSheetByName(SHEET_NAME);
-    
-    if (!sheet) {
-      console.error("❌ HOJA NO ENCONTRADA:", SHEET_NAME);
-      // Listar todas las hojas disponibles para debug
-      const allSheets = ss.getSheets().map(s => s.getName());
-      console.log("📋 Hojas disponibles:", allSheets);
-      return ContentService.createTextOutput(JSON.stringify([]))
-        .setMimeType(ContentService.MimeType.JSON);
+    if (!fecha) {
+        selectHora.innerHTML = "<option value=''>Primero selecciona una fecha</option>";
+        return;
     }
-    
-    console.log("✅ Hoja encontrada:", sheet.getName());
-    console.log("📅 Fecha solicitada:", e.parameter.fecha);
-    
-    const horasOcupadas = [];
-    const fecha = e.parameter.fecha;
 
-    if (fecha && sheet.getLastRow() > 0) {
-      const data = sheet.getDataRange().getValues();
-      console.log("📋 Filas de datos:", data.length);
-      
-      for (let i = 1; i < data.length; i++) {
-        if (data[i][3] && data[i][3].toString() === fecha) {
-          if (data[i][4]) {
-            horasOcupadas.push(data[i][4].toString());
-          }
+    selectHora.innerHTML = "<option value=''>Cargando horas...</option>";
+
+    // Crear callback único
+    const callbackName = 'callback_' + new Date().getTime();
+    window[callbackName] = function(horasOcupadas) {
+        console.log("✅ JSONP - Horas recibidas:", horasOcupadas);
+        actualizarHorasDisponibles(horasOcupadas);
+        delete window[callbackName];
+    };
+
+    // Crear script para JSONP
+    const script = document.createElement('script');
+    script.src = `${SHEET_URL}?fecha=${fecha}&callback=${callbackName}`;
+    script.onerror = function() {
+        console.error("❌ JSONP - Error cargando el script");
+        selectHora.innerHTML = "<option value=''>Error al cargar horas</option>";
+        delete window[callbackName];
+    };
+    
+    document.head.appendChild(script);
+}
+
+function actualizarHorasDisponibles(horasOcupadas) {
+    const selectHora = document.getElementById("hora");
+    const horasDisponibles = [
+        "11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", 
+        "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM"
+    ];
+    
+    selectHora.innerHTML = "<option value=''>Selecciona una hora</option>";
+    
+    let horasDisponiblesCount = 0;
+    
+    horasDisponibles.forEach(hora => {
+        const option = document.createElement("option");
+        option.value = hora;
+        const ocupada = Array.isArray(horasOcupadas) && horasOcupadas.includes(hora);
+        
+        if (ocupada) {
+            option.disabled = true;
+            option.textContent = hora + " (Ocupado)";
+            option.style.color = "#999";
+        } else {
+            option.textContent = hora;
+            horasDisponiblesCount++;
         }
-      }
+        selectHora.appendChild(option);
+    });
+    
+    if (horasDisponiblesCount === 0) {
+        selectHora.innerHTML = "<option value=''>No hay horas disponibles</option>";
     }
-
-    console.log("⏰ Horas ocupadas:", horasOcupadas);
-    const output = JSON.stringify(horasOcupadas);
-
-    return ContentService.createTextOutput(output)
-      .setMimeType(ContentService.MimeType.JSON);
-
-  } catch (error) {
-    console.error("💥 ERROR en doGet:", error.toString());
-    return ContentService.createTextOutput(JSON.stringify([]))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
+    
+    console.log(`🕒 ${horasDisponiblesCount} horas disponibles`);
 }
 
-function doPost(e) {
-  try {
-    console.log("📤 doPost ejecutándose...");
-    
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = ss.getSheetByName(SHEET_NAME);
-    
-    if (!sheet) {
-      throw new Error("No se encuentra la hoja: " + SHEET_NAME);
-    }
-    
-    const data = JSON.parse(e.postData.contents);
-    console.log("📝 Nueva cita:", data);
-    
-    // Agregar encabezados si la hoja está vacía
-    if (sheet.getLastRow() === 0) {
-      sheet.getRange(1, 1, 1, 5).setValues([["Nombre", "Teléfono", "Servicio", "Fecha", "Hora"]]);
-      console.log("📝 Encabezados agregados");
-    }
-    
-    sheet.appendRow([
-      data.nombre,
-      data.telefono, 
-      data.servicio,
-      data.fecha,
-      data.hora
-    ]);
-    
-    console.log("✅ Cita guardada exitosamente");
-    return ContentService.createTextOutput("OK")
-      .setMimeType(ContentService.MimeType.TEXT);
+// Evento al cambiar la fecha
+document.getElementById("fecha").addEventListener("change", cargarHoras);
 
-  } catch (error) {
-    console.error("💥 ERROR en doPost:", error.toString());
-    return ContentService.createTextOutput("ERROR: " + error.toString())
-      .setMimeType(ContentService.MimeType.TEXT);
-  }
-}
+// ===================
+// Enviar cita con POST (esto SÍ funciona con CORS)
+// ===================
+document.getElementById("formCita").addEventListener("submit", async e => {
+    e.preventDefault();
+    
+    const data = {
+        nombre: document.getElementById("nombre").value,
+        telefono: document.getElementById("telefono").value,
+        servicio: document.getElementById("servicio").value,
+        fecha: document.getElementById("fecha").value,
+        hora: document.getElementById("hora").value
+    };
 
-// Función de utilidad para debug
-function debugSheets() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  console.log("🔍 DEBUG - Nombre del Spreadsheet:", ss.getName());
-  console.log("🔍 DEBUG - URL del Spreadsheet:", ss.getUrl());
-  
-  const sheets = ss.getSheets();
-  console.log("🔍 DEBUG - Hojas disponibles:");
-  sheets.forEach((sheet, index) => {
-    console.log(`  ${index + 1}. "${sheet.getName()}" - Filas: ${sheet.getLastRow()}`);
-  });
-  
-  return "Debug completado - Revisa los logs";
+    if (!data.hora || data.hora.includes("Ocupado") || data.hora === "Selecciona una hora") {
+        document.getElementById("estado").textContent = "❌ Por favor selecciona una hora válida";
+        return;
+    }
+
+    const estado = document.getElementById("estado");
+    estado.textContent = "Enviando...";
+    estado.style.color = "#333";
+
+    try {
+        console.log("📤 Enviando cita:", data);
+        const res = await fetch(SHEET_URL, {
+            method: "POST",
+            body: JSON.stringify(data),
+            headers: { "Content-Type": "application/json" }
+        });
+
+        const text = await res.text();
+        console.log("📥 Respuesta del servidor:", text);
+        
+        if(text.includes("OK")) {
+            estado.textContent = "✅ Cita registrada con éxito";
+            estado.style.color = "green";
+            document.getElementById("formCita").reset();
+            if (document.getElementById("fecha").value) cargarHoras();
+        } else {
+            estado.textContent = "❌ Error al registrar la cita";
+            estado.style.color = "red";
+        }
+    } catch (error) {
+        console.error("❌ Error:", error);
+        estado.textContent = "❌ Error de conexión al registrar la cita";
+        estado.style.color = "red";
+    }
+});
 }
