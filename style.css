@@ -206,3 +206,28 @@ nav a:hover {
     background-color: #1ebe5d;
     transform: scale(1.05);
 }
+
+/* === Mejoras visuales para el formulario dinámico === */
+#formCita input, #formCita select {
+  width: 90%;
+  max-width: 400px;
+  padding: 12px;
+  border: 2px solid #e0b05c;
+  border-radius: 8px;
+  background: #1c1c1c;
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  transition: box-shadow 0.3s, transform 0.2s;
+}
+
+#formCita input:focus, #formCita select:focus {
+  box-shadow: 0 0 8px #e0b05c;
+  transform: scale(1.02);
+}
+
+#formCita select option:disabled {
+  color: #777;
+  background: #222;
+}
+
