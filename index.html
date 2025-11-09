@@ -77,37 +77,6 @@
         <a href="https://wa.me/573122860382" class="boton">Agendar por WhatsApp</a>
     </section>
 
-    <!-- === NUEVO FORMULARIO ELEGANTE === -->
-    <section id="agendar" class="formulario-cita">
-        <h2>Agendar Cita</h2>
-        <p>Escribe tus datos, el servicio y la hora deseada. Luego envía por WhatsApp 💈</p>
-
-        <form id="formCita">
-            <textarea id="mensaje" placeholder="Ejemplo: Hola, soy Andrés. Quiero un corte y barba el viernes a las 3:00 PM." required></textarea>
-            <button type="submit"><i class="fa-brands fa-whatsapp"></i> Enviar por WhatsApp</button>
-        </form>
-    </section>
-
-    <footer>
-        <p>© 2025 Estudio Barber House. Todos los derechos reservados.</p>
-    </footer>
-
-    <script>
-      document.getElementById('formCita').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const mensaje = document.getElementById('mensaje').value;
-        const telefono = '573122162605';
-        const url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
-
-        window.open(url, '_blank');
-      });
-    </script>
-</body>
-</html>
-
-
-
 <!-- === FORMULARIO CON HORAS DISPONIBLES === -->
 <section id="agendar" class="formulario-cita">
   <h2>Agendar Cita</h2>
