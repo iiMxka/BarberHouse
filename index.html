@@ -1,107 +1,84 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estudio Barber House</title>
+<!-- === FORMULARIO CON HORAS DISPONIBLES === -->
+<section id="agendar" class="formulario-cita">
+  <h2>Agendar Cita</h2>
+  <p>Selecciona el servicio, elige una hora disponible y deja tus datos 💈</p>
 
-    <!-- Font Awesome para los iconos -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <form id="formCita">
+      <input type="text" id="nombre" placeholder="Tu nombre" required>
+      <input type="tel" id="telefono" placeholder="Tu número de teléfono" required>
+      
+      <select id="servicio" required>
+          <option value="">Selecciona un servicio</option>
+          <option value="Corte">Corte</option>
+          <option value="Cejas">Cejas</option>
+          <option value="Barba">Barba</option>
+          <option value="Mascarilla 5 pasos">Mascarilla 5 pasos</option>
+      </select>
 
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/png" href="favicon.png">
-</head>
-<body>
-    <header>
-        <h1>Estudio Barber House</h1>
-        <nav>
-            <a href="#servicios">Servicios</a>
-            <a href="#galeria">Galería</a>
-            <a href="#contacto">Contacto</a>
-        </nav>
-    </header>
+      <input type="date" id="fecha" required>
+      
+      <select id="hora" required>
+          <option value="">Selecciona una hora</option>
+          <!-- Se llena automáticamente desde Google Sheets -->
+      </select>
 
-    <section id="inicio" class="hero">
-        <h2>Luce con presencia</h2>
-        <p>Reserva tu cita y disfruta de la mejor barbería de San Pedro de los Milagros.</p>
-        <a href="#contacto" class="boton">Agenda tu cita</a>
-    </section>
+      <button type="submit"><i class="fa-solid fa-calendar-check"></i> Reservar cita</button>
+  </form>
 
-    <section id="servicios">
-        <h2>Nuestros Servicios</h2>
-        <div class="servicios-container">
-            <div class="servicio">
-                <i class="fa-solid fa-scissors"></i>
-                <h3>Corte</h3>
-                <p class="precio">$20.000</p>
-                <p>El estilo que más te guste, con acabado profesional.</p>
-            </div>
+  <p id="estado" style="margin-top:15px;"></p>
+</section>
 
-            <div class="servicio">
-                <i class="fa-solid fa-eye"></i>
-                <h3>Cejas</h3>
-                <p class="precio">$5.000</p>
-                <p>Definición y limpieza de cejas con técnica precisa.</p>
-            </div>
+<script>
+const SHEET_URL = "https://script.google.com/u/0/home/projects/11LUvaMSB26mag1mR0M29rOFQEXGSycD7CAiLcHgbH3AcAjfgkVlN7lrC/edit"; // ← remplázalo por tu URL de Google Apps Script
 
-            <div class="servicio">
-                <i class="fa-solid fa-user"></i>
-                <h3>Barba</h3>
-                <p class="precio">$12.000</p>
-                <p>Perfilado, afeitado y arreglo completo de barba.</p>
-            </div>
+async function cargarHoras() {
+  const fecha = document.getElementById("fecha").value;
+  const selectHora = document.getElementById("hora");
+  selectHora.innerHTML = "<option value=''>Cargando horas...</option>";
 
-            <div class="servicio">
-                <i class="fa-solid fa-mask-face"></i>
-                <h3>Mascarilla 5 pasos</h3>
-                <p class="precio">$10.000</p>
-                <p>Exfoliación, hidratación y mascarillas para limpiar y rejuvenecer la piel.</p>
-            </div>
-        </div>
-    </section>
+  if (!fecha) return;
 
-    <section id="galeria">
-        <h2>Galería</h2>
-        <div class="galeria-grid">
-            <img src="https://raw.githubusercontent.com/iimxka/BarberShop/main/super.png" alt="Super">
-            <img src="https://raw.githubusercontent.com/iimxka/BarberShop/main/picollo.png" alt="Picollo">
-            <img src="https://images.unsplash.com/photo-1612336307429-43e4d38e404a?auto=format&fit=crop&w=400&q=80" alt="Wat">
-        </div>
-    </section>
+  const res = await fetch(`${SHEET_URL}?fecha=${fecha}`);
+  const horasOcupadas = await res.json();
 
-    <section id="contacto">
-        <h2>Contáctanos</h2>
-        <p>🪮 Cr 51 CL 49+9 Atras de la iglesia</p>
-        <p>📞 +57 312 2860382</p>
-        <p>📧 Instagram: XXX </p>
-        <a href="https://wa.me/573122860382" class="boton">Agendar por WhatsApp</a>
-    </section>
+  const horas = [
+    "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
+    "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"
+  ];
 
-    <!-- === NUEVO FORMULARIO ELEGANTE === -->
-    <section id="agendar" class="formulario-cita">
-        <h2>Agendar Cita</h2>
-        <p>Escribe tus datos, el servicio y la hora deseada. Luego envía por WhatsApp 💈</p>
+  selectHora.innerHTML = "";
+  horas.forEach(h => {
+    const option = document.createElement("option");
+    option.value = h;
+    option.textContent = h;
+    if (horasOcupadas.includes(h)) {
+      option.disabled = true;
+      option.textContent += " (Ocupado)";
+    }
+    selectHora.appendChild(option);
+  });
+}
 
-        <form id="formCita">
-            <textarea id="mensaje" placeholder="Ejemplo: Hola, soy Andrés. Quiero un corte y barba el viernes a las 3:00 PM." required></textarea>
-            <button type="submit"><i class="fa-brands fa-whatsapp"></i> Enviar por WhatsApp</button>
-        </form>
-    </section>
+document.getElementById("fecha").addEventListener("change", cargarHoras);
 
-    <footer>
-        <p>© 2025 Estudio Barber House. Todos los derechos reservados.</p>
-    </footer>
+document.getElementById("formCita").addEventListener("submit", async e => {
+  e.preventDefault();
+  const data = {
+    nombre: nombre.value,
+    telefono: telefono.value,
+    servicio: servicio.value,
+    fecha: fecha.value,
+    hora: hora.value
+  };
 
-    <script>
-      document.getElementById('formCita').addEventListener('submit', function(e) {
-        e.preventDefault();
+  document.getElementById("estado").textContent = "Enviando...";
+  const res = await fetch(SHEET_URL, {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
 
-        const mensaje = document.getElementById('mensaje').value;
-        const telefono = '573122162605';
-        const url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
-
-        window.open(url, '_blank');
-      });
-    </script>
-</body>
-</html>
+  const text = await res.text();
+  document.getElementById("estado").textContent = text.includes("OK") ? 
+    "✅ Cita registrada con éxito" : "❌ Error al registrar la cita";
+});
+</script>
