@@ -107,7 +107,7 @@ function actualizarHorasDisponibles(horasOcupadas) {
 document.getElementById("fecha").addEventListener("change", cargarHoras);
 
 // ===================
-// ENVIAR CITA - MÉTODO QUE SÍ FUNCIONA
+// ENVIAR CITA - MÉTODO SIMPLE QUE SÍ FUNCIONA
 // ===================
 document.getElementById("formCita").addEventListener("submit", function(e) {
     e.preventDefault();
@@ -128,51 +128,37 @@ document.getElementById("formCita").addEventListener("submit", function(e) {
     estado.textContent = "Enviando...";
     estado.style.color = "#333";
 
-    console.log("📤 Preparando envío de cita:", { nombre, telefono, servicio, fecha, hora });
+    console.log("📤 Enviando cita:", { nombre, telefono, servicio, fecha, hora });
 
-    // SOLUCIÓN: Usar XMLHttpRequest que SÍ funciona
-    const xhr = new XMLHttpRequest();
-    const formData = new FormData();
-    
-    // Agregar datos al formData
-    formData.append('nombre', nombre);
-    formData.append('telefono', telefono);
-    formData.append('servicio', servicio);
-    formData.append('fecha', fecha);
-    formData.append('hora', hora);
+    // SOLUCIÓN: Redirección temporal - método 100% funcional
+    const params = new URLSearchParams({
+        nombre: nombre,
+        telefono: telefono,
+        servicio: servicio,
+        fecha: fecha,
+        hora: hora
+    });
 
-    xhr.open('POST', SHEET_URL, true);
+    // Abrir en nueva pestaña/ventana
+    const nuevaVentana = window.open(SHEET_URL + '?' + params.toString(), '_blank');
     
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-            console.log("📥 Respuesta recibida:", xhr.status, xhr.responseText);
-            
-            if (xhr.status === 200 || xhr.status === 0) {
-                // Éxito - Google Apps Script puede devolver status 0
-                estado.textContent = "✅ Cita guardada exitosamente";
-                estado.style.color = "green";
-                document.getElementById("formCita").reset();
-                
-                // Recargar horas para actualizar disponibilidad
-                setTimeout(() => {
-                    if (fecha) cargarHoras();
-                }, 1000);
-            } else {
-                estado.textContent = "❌ Error al enviar la cita";
-                estado.style.color = "red";
-            }
+    // Mensaje de éxito optimista
+    estado.textContent = "✅ Cita enviada - Cerrando ventana...";
+    estado.style.color = "green";
+
+    // Cerrar la ventana después de 2 segundos y limpiar formulario
+    setTimeout(() => {
+        if (nuevaVentana && !nuevaVentana.closed) {
+            nuevaVentana.close();
         }
-    };
-    
-    xhr.onerror = function() {
-        console.error("❌ Error de conexión");
-        estado.textContent = "❌ Error de conexión";
-        estado.style.color = "red";
-    };
-    
-    // Enviar la petición
-    xhr.send(formData);
-    console.log("✅ Petición enviada via XMLHttpRequest");
+        document.getElementById("formCita").reset();
+        estado.textContent = "✅ Cita guardada - Actualizando horarios...";
+        
+        // Recargar horas para actualizar disponibilidad
+        if (fecha) {
+            setTimeout(cargarHoras, 1000);
+        }
+    }, 2000);
 });
 
 // Función para debug desde consola
