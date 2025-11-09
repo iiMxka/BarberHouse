@@ -19,6 +19,7 @@ function cargarHoras() {
 
     var callbackName = 'cb_' + Date.now();
     window[callbackName] = function(horasOcupadas) {
+        console.log("📥 Horas recibidas:", horasOcupadas);
         var horas = ["11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM"];
         selectHora.innerHTML = "<option value=''>Selecciona una hora</option>";
         
@@ -43,7 +44,7 @@ function cargarHoras() {
     document.head.appendChild(script);
 }
 
-// Enviar cita - MÉTODO 100% CONFIRMADO
+// Enviar cita
 document.getElementById("formCita").addEventListener("submit", function(e) {
     e.preventDefault();
     
@@ -64,21 +65,17 @@ document.getElementById("formCita").addEventListener("submit", function(e) {
 
     console.log("📤 Enviando cita:", { nombre, telefono, servicio, fecha, hora });
 
-    // MÉTODO GARANTIZADO: JSONP para enviar citas también
     var callbackName = 'guardarCita_' + Date.now();
     window[callbackName] = function(respuesta) {
-        console.log("📥 Respuesta del servidor:", respuesta);
+        console.log("📥 RESPUESTA DEL SERVIDOR:", respuesta);
         
         if (respuesta && respuesta.includes('OK')) {
             estado.textContent = "✅ Cita guardada EXITOSAMENTE";
             estado.style.color = "green";
             document.getElementById("formCita").reset();
             
-            // Recargar horas después de 1 segundo
             setTimeout(function() {
-                if (fecha) {
-                    cargarHoras();
-                }
+                if (fecha) cargarHoras();
             }, 1000);
         } else {
             estado.textContent = "❌ Error: " + (respuesta || 'Sin respuesta');
