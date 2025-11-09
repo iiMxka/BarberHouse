@@ -114,52 +114,95 @@ nav a:hover {
     margin-bottom: 10px;
 }
 
+/* Galería */
+#galeria {
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.galeria-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.galeria-grid img {
+    width: 100%;
+    border-radius: 10px;
+    object-fit: cover;
+}
 
 /* Contacto */
 #contacto {
     text-align: center;
-    padding: 40px 20px;
+    padding: 80px 20px;
 }
 
-
-/* === Mejoras visuales para el formulario dinámico === */
-#formCita input, #formCita select {
-  width: 90%;
-  max-width: 400px;
-  padding: 12px;
-  border: 2px solid #e0b05c;
-  border-radius: 8px;
-  background: #1c1c1c;
-  color: #fff;
-  font-size: 1rem;
-  outline: none;
-  transition: box-shadow 0.3s, transform 0.2s;
+/* === FORMULARIO ELEGANTE === */
+.formulario-cita {
+    text-align: center;
+    background: radial-gradient(circle at top, #1a1a1a 0%, #0a0a0a 100%);
+    padding: 80px 20px;
+    color: #fff;
 }
 
-#formCita input:focus, #formCita select:focus {
-  box-shadow: 0 0 8px #e0b05c;
-  transform: scale(1.02);
+.formulario-cita h2 {
+    color: #e0b05c;
+    font-size: 2rem;
+    margin-bottom: 10px;
+    text-transform: uppercase;
 }
 
-#formCita select option:disabled {
-  color: #777;
-  background: #222;
+.formulario-cita p {
+    color: #aaa;
+    font-size: 1rem;
+    margin-bottom: 25px;
 }
 
-/* Ajuste para mover los botones del menú hacia la izquierda */
-nav {
+#formCita {
     display: flex;
-    justify-content: flex-end;
+    flex-direction: column;
     align-items: center;
-    flex: 1;
+    gap: 20px;
 }
 
-nav a {
-    margin-right: 25px; /* separa un poco los enlaces */
+#mensaje {
+    width: 90%;
+    max-width: 500px;
+    min-height: 120px;
+    background-color: #1c1c1c;
+    border: 2px solid #e0b05c;
+    color: #fff;
+    font-size: 1rem;
+    padding: 15px;
+    border-radius: 10px;
+    resize: none;
+    outline: none;
+    transition: box-shadow 0.3s, transform 0.3s;
 }
 
-header {
-    justify-content: space-around; /* mueve todo un poco más hacia el centro */
+#mensaje:focus {
+    box-shadow: 0 0 10px #e0b05c;
+    transform: scale(1.02);
 }
 
+#formCita button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #25D366;
+    color: #fff;
+    font-weight: bold;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+}
 
+#formCita button:hover {
+    background-color: #1ebe5d;
+    transform: scale(1.05);
+} 
