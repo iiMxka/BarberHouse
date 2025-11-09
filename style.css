@@ -146,3 +146,20 @@ nav a:hover {
   background: #222;
 }
 
+/* Ajuste para mover los botones del menú hacia la izquierda */
+nav {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex: 1;
+}
+
+nav a {
+    margin-right: 25px; /* separa un poco los enlaces */
+}
+
+header {
+    justify-content: space-around; /* mueve todo un poco más hacia el centro */
+}
+
+
