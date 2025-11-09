@@ -114,29 +114,11 @@ nav a:hover {
     margin-bottom: 10px;
 }
 
-/* Galería */
-#galeria {
-    text-align: center;
-    padding: 80px 20px;
-}
-
-.galeria-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 15px;
-    margin-top: 30px;
-}
-
-.galeria-grid img {
-    width: 100%;
-    border-radius: 10px;
-    object-fit: cover;
-}
 
 /* Contacto */
 #contacto {
     text-align: center;
-    padding: 80px 20px;
+    padding: 40px 20px;
 }
 
 /* === FORMULARIO ELEGANTE === */
