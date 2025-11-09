@@ -107,7 +107,7 @@ function actualizarHorasDisponibles(horasOcupadas) {
 document.getElementById("fecha").addEventListener("change", cargarHoras);
 
 // ===================
-// ENVIAR CITA - VERSIÓN MEJORADA
+// ENVIAR CITA - MÉTODO QUE SÍ FUNCIONA
 // ===================
 document.getElementById("formCita").addEventListener("submit", function(e) {
     e.preventDefault();
@@ -130,20 +130,27 @@ document.getElementById("formCita").addEventListener("submit", function(e) {
 
     console.log("📤 Preparando envío de cita:", { nombre, telefono, servicio, fecha, hora });
 
-    // SOLUCIÓN: Usar un iframe para recibir la respuesta
-    const iframe = document.createElement('iframe');
-    iframe.name = 'hiddenFrame';
-    iframe.style.display = 'none';
+    // SOLUCIÓN: Usar XMLHttpRequest que SÍ funciona
+    const xhr = new XMLHttpRequest();
+    const formData = new FormData();
     
-    // Escuchar mensajes del iframe
-    window.addEventListener('message', function(event) {
-        // Verificar que el mensaje sea del iframe
-        if (event.data && (event.data.success !== undefined)) {
-            if (event.data.success) {
-                estado.textContent = "✅ " + event.data.message;
+    // Agregar datos al formData
+    formData.append('nombre', nombre);
+    formData.append('telefono', telefono);
+    formData.append('servicio', servicio);
+    formData.append('fecha', fecha);
+    formData.append('hora', hora);
+
+    xhr.open('POST', SHEET_URL, true);
+    
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            console.log("📥 Respuesta recibida:", xhr.status, xhr.responseText);
+            
+            if (xhr.status === 200 || xhr.status === 0) {
+                // Éxito - Google Apps Script puede devolver status 0
+                estado.textContent = "✅ Cita guardada exitosamente";
                 estado.style.color = "green";
-                
-                // Limpiar formulario
                 document.getElementById("formCita").reset();
                 
                 // Recargar horas para actualizar disponibilidad
@@ -151,52 +158,21 @@ document.getElementById("formCita").addEventListener("submit", function(e) {
                     if (fecha) cargarHoras();
                 }, 1000);
             } else {
-                estado.textContent = "❌ " + event.data.message;
+                estado.textContent = "❌ Error al enviar la cita";
                 estado.style.color = "red";
             }
-            
-            // Limpiar después de 5 segundos
-            setTimeout(() => {
-                if (iframe.parentNode) {
-                    iframe.parentNode.removeChild(iframe);
-                }
-                if (formTemp.parentNode) {
-                    formTemp.parentNode.removeChild(formTemp);
-                }
-            }, 5000);
         }
-    });
+    };
     
-    document.body.appendChild(iframe);
-
-    // Crear formulario temporal
-    const formTemp = document.createElement('form');
-    formTemp.method = 'POST';
-    formTemp.action = SHEET_URL;
-    formTemp.target = 'hiddenFrame';
-    formTemp.style.display = 'none';
-
-    // Agregar campos
-    function agregarCampo(nombre, valor) {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = nombre;
-        input.value = valor;
-        formTemp.appendChild(input);
-    }
-
-    agregarCampo('nombre', nombre);
-    agregarCampo('telefono', telefono);
-    agregarCampo('servicio', servicio);
-    agregarCampo('fecha', fecha);
-    agregarCampo('hora', hora);
-
-    document.body.appendChild(formTemp);
+    xhr.onerror = function() {
+        console.error("❌ Error de conexión");
+        estado.textContent = "❌ Error de conexión";
+        estado.style.color = "red";
+    };
     
-    // Enviar formulario
-    formTemp.submit();
-    
-    console.log("✅ Formulario enviado via método tradicional");
+    // Enviar la petición
+    xhr.send(formData);
+    console.log("✅ Petición enviada via XMLHttpRequest");
 });
 
 // Función para debug desde consola
