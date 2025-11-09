@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ===================
-// Cargar horas con JSONP (SOLUCIÓN PARA CORS) - ESTO YA FUNCIONA ✅
+// Cargar horas con JSONP (SOLUCIÓN PARA CORS)
 // ===================
 function cargarHoras() {
     const fecha = document.getElementById("fecha").value;
@@ -107,12 +107,11 @@ function actualizarHorasDisponibles(horasOcupadas) {
 document.getElementById("fecha").addEventListener("change", cargarHoras);
 
 // ===================
-// ENVIAR CITA - MÉTODO TRADICIONAL SIN FETCH ✅
+// ENVIAR CITA - VERSIÓN MEJORADA
 // ===================
 document.getElementById("formCita").addEventListener("submit", function(e) {
     e.preventDefault();
     
-    // Obtener datos del formulario
     const nombre = document.getElementById("nombre").value;
     const telefono = document.getElementById("telefono").value;
     const servicio = document.getElementById("servicio").value;
@@ -131,10 +130,43 @@ document.getElementById("formCita").addEventListener("submit", function(e) {
 
     console.log("📤 Preparando envío de cita:", { nombre, telefono, servicio, fecha, hora });
 
-    // SOLUCIÓN: Crear un iframe invisible para enviar los datos
+    // SOLUCIÓN: Usar un iframe para recibir la respuesta
     const iframe = document.createElement('iframe');
     iframe.name = 'hiddenFrame';
     iframe.style.display = 'none';
+    
+    // Escuchar mensajes del iframe
+    window.addEventListener('message', function(event) {
+        // Verificar que el mensaje sea del iframe
+        if (event.data && (event.data.success !== undefined)) {
+            if (event.data.success) {
+                estado.textContent = "✅ " + event.data.message;
+                estado.style.color = "green";
+                
+                // Limpiar formulario
+                document.getElementById("formCita").reset();
+                
+                // Recargar horas para actualizar disponibilidad
+                setTimeout(() => {
+                    if (fecha) cargarHoras();
+                }, 1000);
+            } else {
+                estado.textContent = "❌ " + event.data.message;
+                estado.style.color = "red";
+            }
+            
+            // Limpiar después de 5 segundos
+            setTimeout(() => {
+                if (iframe.parentNode) {
+                    iframe.parentNode.removeChild(iframe);
+                }
+                if (formTemp.parentNode) {
+                    formTemp.parentNode.removeChild(formTemp);
+                }
+            }, 5000);
+        }
+    });
+    
     document.body.appendChild(iframe);
 
     // Crear formulario temporal
@@ -144,7 +176,7 @@ document.getElementById("formCita").addEventListener("submit", function(e) {
     formTemp.target = 'hiddenFrame';
     formTemp.style.display = 'none';
 
-    // Agregar campos como inputs normales
+    // Agregar campos
     function agregarCampo(nombre, valor) {
         const input = document.createElement('input');
         input.type = 'hidden';
@@ -164,23 +196,7 @@ document.getElementById("formCita").addEventListener("submit", function(e) {
     // Enviar formulario
     formTemp.submit();
     
-    // Mensaje de éxito
-    estado.textContent = "✅ Cita enviada con éxito";
-    estado.style.color = "green";
-    
-    console.log("✅ Formulario enviado via método tradicional - SIN FETCH");
-
-    // Limpiar después de 3 segundos
-    setTimeout(() => {
-        document.getElementById("formCita").reset();
-        document.body.removeChild(formTemp);
-        document.body.removeChild(iframe);
-        
-        // Recargar horas para actualizar disponibilidad
-        if (fecha) {
-            setTimeout(() => cargarHoras(), 1000);
-        }
-    }, 3000);
+    console.log("✅ Formulario enviado via método tradicional");
 });
 
 // Función para debug desde consola
