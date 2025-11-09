@@ -132,4 +132,3 @@ document.getElementById("formCita").addEventListener("submit", async e => {
         estado.style.color = "red";
     }
 });
-}
