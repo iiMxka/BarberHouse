@@ -107,21 +107,20 @@ function actualizarHorasDisponibles(horasOcupadas) {
 document.getElementById("fecha").addEventListener("change", cargarHoras);
 
 // ===================
-// ENVIAR CITA - ESTA ES LA PARTE MODIFICADA ✅
+// ENVIAR CITA - MÉTODO TRADICIONAL SIN FETCH ✅
 // ===================
 document.getElementById("formCita").addEventListener("submit", function(e) {
     e.preventDefault();
     
-    const data = {
-        nombre: document.getElementById("nombre").value,
-        telefono: document.getElementById("telefono").value,
-        servicio: document.getElementById("servicio").value,
-        fecha: document.getElementById("fecha").value,
-        hora: document.getElementById("hora").value
-    };
+    // Obtener datos del formulario
+    const nombre = document.getElementById("nombre").value;
+    const telefono = document.getElementById("telefono").value;
+    const servicio = document.getElementById("servicio").value;
+    const fecha = document.getElementById("fecha").value;
+    const hora = document.getElementById("hora").value;
 
     // Validación básica
-    if (!data.hora || data.hora.includes("Ocupado") || data.hora === "Selecciona una hora") {
+    if (!hora || hora.includes("Ocupado") || hora === "Selecciona una hora") {
         document.getElementById("estado").textContent = "❌ Por favor selecciona una hora válida";
         return;
     }
@@ -130,51 +129,58 @@ document.getElementById("formCita").addEventListener("submit", function(e) {
     estado.textContent = "Enviando...";
     estado.style.color = "#333";
 
-    console.log("📤 Preparando envío de cita:", data);
+    console.log("📤 Preparando envío de cita:", { nombre, telefono, servicio, fecha, hora });
 
-    // SOLUCIÓN: Usar un formulario temporal para evitar CORS
+    // SOLUCIÓN: Crear un iframe invisible para enviar los datos
+    const iframe = document.createElement('iframe');
+    iframe.name = 'hiddenFrame';
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
+    // Crear formulario temporal
     const formTemp = document.createElement('form');
     formTemp.method = 'POST';
     formTemp.action = SHEET_URL;
+    formTemp.target = 'hiddenFrame';
     formTemp.style.display = 'none';
-    
-    // Agregar campos
-    const campos = [
-        { name: 'nombre', value: data.nombre },
-        { name: 'telefono', value: data.telefono },
-        { name: 'servicio', value: data.servicio },
-        { name: 'fecha', value: data.fecha },
-        { name: 'hora', value: data.hora }
-    ];
-    
-    campos.forEach(campo => {
+
+    // Agregar campos como inputs normales
+    function agregarCampo(nombre, valor) {
         const input = document.createElement('input');
-        input.name = campo.name;
-        input.value = campo.value;
+        input.type = 'hidden';
+        input.name = nombre;
+        input.value = valor;
         formTemp.appendChild(input);
-    });
-    
+    }
+
+    agregarCampo('nombre', nombre);
+    agregarCampo('telefono', telefono);
+    agregarCampo('servicio', servicio);
+    agregarCampo('fecha', fecha);
+    agregarCampo('hora', hora);
+
     document.body.appendChild(formTemp);
     
-    // Enviar el formulario
+    // Enviar formulario
     formTemp.submit();
     
-    // Mensaje de éxito (optimista)
+    // Mensaje de éxito
     estado.textContent = "✅ Cita enviada con éxito";
     estado.style.color = "green";
     
-    // Limpiar formulario después de 2 segundos
+    console.log("✅ Formulario enviado via método tradicional - SIN FETCH");
+
+    // Limpiar después de 3 segundos
     setTimeout(() => {
         document.getElementById("formCita").reset();
         document.body.removeChild(formTemp);
+        document.body.removeChild(iframe);
         
         // Recargar horas para actualizar disponibilidad
-        if (document.getElementById("fecha").value) {
-            cargarHoras();
+        if (fecha) {
+            setTimeout(() => cargarHoras(), 1000);
         }
-    }, 2000);
-    
-    console.log("✅ Formulario enviado via método tradicional");
+    }, 3000);
 });
 
 // Función para debug desde consola
