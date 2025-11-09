@@ -1,3 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estudio Barber House</title>
+
+    <!-- Font Awesome para los iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+</head>
+<body>
+    <header>
+        <h1>Estudio Barber House</h1>
+        <nav>
+            <a href="#servicios">Servicios</a>
+            <a href="#galeria">Galería</a>
+            <a href="#contacto">Contacto</a>
+        </nav>
+    </header>
+
+    <section id="inicio" class="hero">
+        <h2>Luce con presencia</h2>
+        <p>Reserva tu cita y disfruta de la mejor barbería de San Pedro de los Milagros.</p>
+        <a href="#contacto" class="boton">Agenda tu cita</a>
+    </section>
+
+    <section id="servicios">
+        <h2>Nuestros Servicios</h2>
+        <div class="servicios-container">
+            <div class="servicio">
+                <i class="fa-solid fa-scissors"></i>
+                <h3>Corte</h3>
+                <p class="precio">$20.000</p>
+                <p>El estilo que más te guste, con acabado profesional.</p>
+            </div>
+
+            <div class="servicio">
+                <i class="fa-solid fa-eye"></i>
+                <h3>Cejas</h3>
+                <p class="precio">$5.000</p>
+                <p>Definición y limpieza de cejas con técnica precisa.</p>
+            </div>
+
+            <div class="servicio">
+                <i class="fa-solid fa-user"></i>
+                <h3>Barba</h3>
+                <p class="precio">$12.000</p>
+                <p>Perfilado, afeitado y arreglo completo de barba.</p>
+            </div>
+
+            <div class="servicio">
+                <i class="fa-solid fa-mask-face"></i>
+                <h3>Mascarilla 5 pasos</h3>
+                <p class="precio">$10.000</p>
+                <p>Exfoliación, hidratación y mascarillas para limpiar y rejuvenecer la piel.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="galeria">
+        <h2>Galería</h2>
+        <div class="galeria-grid">
+            <img src="https://raw.githubusercontent.com/iimxka/BarberShop/main/super.png" alt="Super">
+            <img src="https://raw.githubusercontent.com/iimxka/BarberShop/main/picollo.png" alt="Picollo">
+            <img src="https://images.unsplash.com/photo-1612336307429-43e4d38e404a?auto=format&fit=crop&w=400&q=80" alt="Wat">
+        </div>
+    </section>
+
+    <section id="contacto">
+        <h2>Contáctanos</h2>
+        <p>🪮 Cr 51 CL 49+9 Atras de la iglesia</p>
+        <p>📞 +57 312 2860382</p>
+        <p>📧 Instagram: XXX </p>
+        <a href="https://wa.me/573122860382" class="boton">Agendar por WhatsApp</a>
+    </section>
+
+    <!-- === NUEVO FORMULARIO ELEGANTE === -->
+    <section id="agendar" class="formulario-cita">
+        <h2>Agendar Cita</h2>
+        <p>Escribe tus datos, el servicio y la hora deseada. Luego envía por WhatsApp 💈</p>
+
+        <form id="formCita">
+            <textarea id="mensaje" placeholder="Ejemplo: Hola, soy Andrés. Quiero un corte y barba el viernes a las 3:00 PM." required></textarea>
+            <button type="submit"><i class="fa-brands fa-whatsapp"></i> Enviar por WhatsApp</button>
+        </form>
+    </section>
+
+    <footer>
+        <p>© 2025 Estudio Barber House. Todos los derechos reservados.</p>
+    </footer>
+
+    <script>
+      document.getElementById('formCita').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const mensaje = document.getElementById('mensaje').value;
+        const telefono = '573122162605';
+        const url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+
+        window.open(url, '_blank');
+      });
+    </script>
+</body>
+</html>
+
+
+
 <!-- === FORMULARIO CON HORAS DISPONIBLES === -->
 <section id="agendar" class="formulario-cita">
   <h2>Agendar Cita</h2>
