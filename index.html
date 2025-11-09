@@ -111,9 +111,9 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ===================
-// JSONP para cargar horas
+// Cargar horas CON FETCH (más confiable)
 // ===================
-function cargarHoras() {
+async function cargarHoras() {
     const fecha = document.getElementById("fecha").value;
     const selectHora = document.getElementById("hora");
     
@@ -124,31 +124,23 @@ function cargarHoras() {
 
     selectHora.innerHTML = "<option value=''>Cargando horas...</option>";
 
-    // Limpiar callback anterior si existe
-    if (window.procesarHoras) {
-        delete window.procesarHoras;
-    }
-
-    // Crear callback único para evitar conflictos
-    const callbackName = 'procesarHoras_' + new Date().getTime();
-    window[callbackName] = function(horasOcupadas) {
-        procesarHorasReal(horasOcupadas);
-        delete window[callbackName];
-    };
-
-    // Crear script dinámico para JSONP
-    const script = document.createElement("script");
-    script.src = `${SHEET_URL}?fecha=${fecha}&callback=${callbackName}`;
-    script.onerror = function() {
+    try {
+        // Usar FETCH en lugar de JSONP (más confiable)
+        const response = await fetch(`${SHEET_URL}?fecha=${fecha}`);
+        
+        if (!response.ok) throw new Error(`Error: ${response.status}`);
+        
+        const horasOcupadas = await response.json();
+        actualizarHorasDisponibles(horasOcupadas);
+        
+    } catch (error) {
+        console.error("Error cargando las horas disponibles:", error);
         selectHora.innerHTML = "<option value=''>Error al cargar horas</option>";
-        console.error("Error cargando las horas disponibles");
-    };
-    
-    document.body.appendChild(script);
+    }
 }
 
-// Función real para procesar las horas
-function procesarHorasReal(horasOcupadas) {
+// Función para actualizar las horas en el select
+function actualizarHorasDisponibles(horasOcupadas) {
     const selectHora = document.getElementById("hora");
     
     // Horas disponibles del negocio
@@ -163,7 +155,10 @@ function procesarHorasReal(horasOcupadas) {
         const option = document.createElement("option");
         option.value = hora;
         
-        if (horasOcupadas && horasOcupadas.includes(hora)) {
+        // Verificar si la hora está ocupada
+        const ocupada = Array.isArray(horasOcupadas) && horasOcupadas.includes(hora);
+        
+        if (ocupada) {
             option.disabled = true;
             option.textContent = hora + " (Ocupado)";
             option.style.color = "#999";
@@ -179,9 +174,6 @@ function procesarHorasReal(horasOcupadas) {
         selectHora.innerHTML = "<option value=''>No hay horas disponibles</option>";
     }
 }
-
-// Manejar errores del JSONP
-window.procesarHoras = procesarHorasReal;
 
 // Evento al cambiar la fecha
 document.getElementById("fecha").addEventListener("change", cargarHoras);
@@ -236,20 +228,22 @@ document.getElementById("formCita").addEventListener("submit", async e => {
         estado.style.color = "red";
     }
 });
-// Agrega esta función temporal para debug
+
+// Función para debug
 function debugCargaHoras() {
     const fecha = document.getElementById("fecha").value;
     console.log("Fecha seleccionada:", fecha);
     
-    // Test directo
     fetch(`${SHEET_URL}?fecha=${fecha}`)
         .then(r => r.json())
         .then(horas => console.log("Horas ocupadas:", horas))
         .catch(err => console.error("Error fetch:", err));
 }
+<!-- ... todo el HTML igual hasta el final ... -->
+    </section>
 
-// Llama a esta función desde la consola del navegador para probar
-    
-</script>
+    <script src="app.js"></script>
+</body>
+</html>
 </body>
 </html>
