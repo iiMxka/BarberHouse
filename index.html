@@ -12,6 +12,7 @@
     <link rel="icon" type="image/png" href="favicon.png">
 </head>
 <body>
+    <!-- Header con contenedor para centrar contenido -->
     <header>
         <div class="header-contenedor">
             <h1>Estudio Barber House</h1>
@@ -67,96 +68,103 @@
         <p>📧 Instagram: XXX </p>
     </section>
 
-<!-- === FORMULARIO CON HORAS DISPONIBLES === -->
-<section id="agendar" class="formulario-cita">
-  <h2>Agendar Cita</h2>
-  <p>Selecciona el servicio, elige una hora disponible y deja tus datos 💈</p>
+    <!-- === FORMULARIO CON HORAS DISPONIBLES === -->
+    <section id="agendar" class="formulario-cita">
+        <h2>Agendar Cita</h2>
+        <p>Selecciona el servicio, elige una hora disponible y deja tus datos 💈</p>
 
-  <form id="formCita">
-      <input type="text" id="nombre" placeholder="Tu nombre" required>
-      <input type="tel" id="telefono" placeholder="Tu número de teléfono" required>
-      
-      <select id="servicio" required>
-          <option value="">Selecciona un servicio</option>
-          <option value="Corte">Corte</option>
-          <option value="Cejas">Cejas</option>
-          <option value="Barba">Barba</option>
-          <option value="Mascarilla 5 pasos">Mascarilla 5 pasos</option>
-      </select>
+        <form id="formCita">
+            <input type="text" id="nombre" placeholder="Tu nombre" required>
+            <input type="tel" id="telefono" placeholder="Tu número de teléfono" required>
+            
+            <select id="servicio" required>
+                <option value="">Selecciona un servicio</option>
+                <option value="Corte">Corte</option>
+                <option value="Cejas">Cejas</option>
+                <option value="Barba">Barba</option>
+                <option value="Mascarilla 5 pasos">Mascarilla 5 pasos</option>
+            </select>
 
-      <input type="date" id="fecha" required>
-      
-      <select id="hora" required>
-          <option value="">Selecciona una hora</option>
-          <!-- Se llena automáticamente desde Google Sheets -->
-      </select>
+            <input type="date" id="fecha" required>
+            
+            <select id="hora" required>
+                <option value="">Selecciona una hora</option>
+                <!-- Se llena automáticamente desde Google Sheets -->
+            </select>
 
-      <button type="submit"><i class="fa-solid fa-calendar-check"></i> Reservar cita</button>
-  </form>
+            <button type="submit"><i class="fa-solid fa-calendar-check"></i> Reservar cita</button>
+        </form>
 
-  <p id="estado" style="margin-top:15px;"></p>
-</section>
+        <p id="estado" style="margin-top:15px;"></p>
+    </section>
 
 <script>
 const SHEET_URL = "https://script.google.com/macros/s/AKfycbzWxWXF_K6SsCgtNEh4U1EJ0aCq2TZ4IswsqyxRMhscJPIiade4t94ClUCrcPM5ESx4MQ/exec";
 
+// Cargar horas disponibles desde Google Sheets
 async function cargarHoras() {
-  const fecha = document.getElementById("fecha").value;
-  const selectHora = document.getElementById("hora");
-  selectHora.innerHTML = "<option value=''>Cargando horas...</option>";
+    const fecha = document.getElementById("fecha").value;
+    const selectHora = document.getElementById("hora");
+    selectHora.innerHTML = "<option value=''>Cargando horas...</option>";
 
-  if (!fecha) return;
+    if (!fecha) return;
 
-  try {
-    const res = await fetch(`${SHEET_URL}?fecha=${fecha}`);
-    const horasOcupadas = await res.json();
+    try {
+        const res = await fetch(`${SHEET_URL}?fecha=${fecha}`);
+        const horasOcupadas = await res.json();
 
-    const horas = [
-      "11:00 AM","12:00 PM","1:00 PM","2:00 PM","3:00 PM",
-      "4:00 PM","5:00 PM","6:00 PM","7:00 PM"
-    ];
+        const horas = [
+            "11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", 
+            "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM"
+        ];
 
-    selectHora.innerHTML = "";
-    horas.forEach(h => {
-      const option = document.createElement("option");
-      option.value = h;
-      option.textContent = h;
-      if (horasOcupadas.includes(h)) {
-        option.disabled = true;
-        option.textContent += " (Ocupado)";
-      }
-      selectHora.appendChild(option);
-    });
-  } catch(err) {
-    console.error("Error al cargar las horas:", err);
-    selectHora.innerHTML = "<option value=''>Error al cargar horas</option>";
-  }
+        selectHora.innerHTML = "";
+        horas.forEach(h => {
+            const option = document.createElement("option");
+            option.value = h;
+            option.textContent = h;
+            if (horasOcupadas.includes(h)) {
+                option.disabled = true;
+                option.textContent += " (Ocupado)";
+            }
+            selectHora.appendChild(option);
+        });
+
+    } catch (error) {
+        console.error("Error al cargar horas:", error);
+        selectHora.innerHTML = "<option value=''>Error al cargar horas</option>";
+    }
 }
 
 document.getElementById("fecha").addEventListener("change", cargarHoras);
 
+// Enviar datos al Google Sheet
 document.getElementById("formCita").addEventListener("submit", async e => {
-  e.preventDefault();
-  const data = {
-    nombre: nombre.value,
-    telefono: telefono.value,
-    servicio: servicio.value,
-    fecha: fecha.value,
-    hora: hora.value
-  };
+    e.preventDefault();
+    const data = {
+        nombre: nombre.value,
+        telefono: telefono.value,
+        servicio: servicio.value,
+        fecha: fecha.value,
+        hora: hora.value
+    };
 
-  document.getElementById("estado").textContent = "Enviando...";
-  try {
-    const res = await fetch(SHEET_URL, {
-      method: "POST",
-      body: JSON.stringify(data)
-    });
-    const text = await res.text();
-    document.getElementById("estado").textContent = text.includes("OK") ? 
-      "✅ Cita registrada con éxito" : "❌ Error al registrar la cita";
-  } catch(err) {
-    document.getElementById("estado").textContent = "❌ Error al registrar la cita";
-    console.error(err);
-  }
+    document.getElementById("estado").textContent = "Enviando...";
+    try {
+        const res = await fetch(SHEET_URL, {
+            method: "POST",
+            body: JSON.stringify(data)
+        });
+
+        const text = await res.text();
+        document.getElementById("estado").textContent = text.includes("OK") ? 
+            "✅ Cita registrada con éxito" : "❌ Error al registrar la cita";
+    } catch (error) {
+        document.getElementById("estado").textContent = "❌ Error al registrar la cita";
+        console.error(error);
+    }
 });
 </script>
+</body>
+</html>
+
