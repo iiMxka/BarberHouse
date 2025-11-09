@@ -101,41 +101,46 @@
 <script>
 const SHEET_URL = "https://script.google.com/macros/s/AKfycbwa5upKmZ6lHQXTVx14TbchtSw0qYUCsUapSAqzHJdEALx1fxhlpQTqFlcqnR42bRf_Cg/exec";
 
-// Función para cargar horas disponibles según la fecha
-async function cargarHoras() {
+// ===================
+// JSONP para cargar horas
+// ===================
+function cargarHoras() {
     const fecha = document.getElementById("fecha").value;
-    const selectHora = document.getElementById("hora");
-    selectHora.innerHTML = "<option value=''>Cargando horas...</option>";
     if (!fecha) return;
 
-    try {
-        const res = await fetch(`${SHEET_URL}?fecha=${fecha}`);
-        if(!res.ok) throw new Error("Error en la respuesta del servidor");
-        const horasOcupadas = await res.json();
+    const selectHora = document.getElementById("hora");
+    selectHora.innerHTML = "<option value=''>Cargando horas...</option>";
 
-        const horas = ["11:00 AM","12:00 PM","1:00 PM","2:00 PM","3:00 PM","4:00 PM","5:00 PM","6:00 PM","7:00 PM"];
-        selectHora.innerHTML = "<option value=''>Selecciona una hora</option>";
+    // Crear script dinámico para JSONP
+    const script = document.createElement("script");
+    script.src = `${SHEET_URL}?fecha=${fecha}&callback=procesarHoras`;
+    document.body.appendChild(script);
+}
 
-        horas.forEach(h => {
-            const option = document.createElement("option");
-            option.value = h;
-            option.textContent = h;
-            if (horasOcupadas.includes(h)) {
-                option.disabled = true;
-                option.textContent += " (Ocupado)";
-            }
-            selectHora.appendChild(option);
-        });
-    } catch (error) {
-        console.error(error);
-        selectHora.innerHTML = "<option value=''>Error al cargar horas</option>";
-    }
+// Callback JSONP
+function procesarHoras(horasOcupadas) {
+    const selectHora = document.getElementById("hora");
+    const horas = ["11:00 AM","12:00 PM","1:00 PM","2:00 PM","3:00 PM","4:00 PM","5:00 PM","6:00 PM","7:00 PM"];
+    selectHora.innerHTML = "<option value=''>Selecciona una hora</option>";
+
+    horas.forEach(h => {
+        const option = document.createElement("option");
+        option.value = h;
+        option.textContent = h;
+        if (horasOcupadas.includes(h)) {
+            option.disabled = true;
+            option.textContent += " (Ocupado)";
+        }
+        selectHora.appendChild(option);
+    });
 }
 
 // Evento al cambiar la fecha
 document.getElementById("fecha").addEventListener("change", cargarHoras);
 
-// Enviar cita
+// ===================
+// Enviar cita con POST
+// ===================
 document.getElementById("formCita").addEventListener("submit", async e => {
     e.preventDefault();
     const data = {
@@ -160,7 +165,7 @@ document.getElementById("formCita").addEventListener("submit", async e => {
         if(text.includes("OK")) {
             estado.textContent = "✅ Cita registrada con éxito";
             document.getElementById("formCita").reset();
-            cargarHoras(); // recarga las horas bloqueadas
+            cargarHoras(); // recargar horas ocupadas
         } else {
             estado.textContent = "❌ Error al registrar la cita";
         }
@@ -170,9 +175,5 @@ document.getElementById("formCita").addEventListener("submit", async e => {
     }
 });
 </script>
-
-
-</script>
 </body>
 </html>
-
