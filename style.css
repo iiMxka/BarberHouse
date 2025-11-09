@@ -107,7 +107,7 @@ nav a:hover {
     margin-bottom: 10px;
 }
 
-/* 🎯 NUEVO: estilo para los íconos de los servicios */
+/* 🎯 Íconos de los servicios */
 .servicio i {
     font-size: 2.2rem;
     color: #e0b05c;
@@ -137,6 +137,55 @@ nav a:hover {
 #contacto {
     text-align: center;
     padding: 80px 20px;
+}
+
+/* === NUEVO: Formulario de agendar cita === */
+.formulario-cita {
+    text-align: center;
+    background-color: #111;
+    padding: 60px 20px;
+    color: #fff;
+}
+
+.formulario-cita h2 {
+    color: #e0b05c;
+    margin-bottom: 15px;
+}
+
+.formulario-cita p {
+    color: #ccc;
+    margin-bottom: 25px;
+}
+
+#formCita {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+#formCita input {
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    width: 250px;
+    font-size: 1rem;
+}
+
+#formCita button {
+    background-color: #e0b05c;
+    color: #000;
+    font-weight: bold;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#formCita button:hover {
+    background-color: #fff;
 }
 
 /* Footer */
