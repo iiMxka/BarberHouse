@@ -1,4 +1,4 @@
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbwa5upKmZ6lHQXTVx14TbchtSw0qYUCsUapSAqzHJdEALx1fxhlpQTqFlcqnR42bRf_Cg/exec";
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbxTMysilnnHlKiNmNpbN4G62z_N4zdGMS9oZeKLBpzRN4iPHIGhaO0-t9y0urWULkUSoQ/exec";
 
 // ===================
 // Inicializar fecha mínima (hoy)
