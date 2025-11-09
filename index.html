@@ -5,30 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Estudio Barber House</title>
 
-    <!-- Font Awesome para los iconos -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/png" href="favicon.png">
 </head>
 <body>
-    <!-- Header con contenedor para centrar contenido -->
+    <!-- Header -->
     <header>
         <div class="header-contenedor">
             <h1>Estudio Barber House</h1>
             <nav>
                 <a href="#servicios">Servicios</a>
                 <a href="#contacto">Contacto</a>
+                <a href="#agendar">Agendar Cita</a>
             </nav>
         </div>
     </header>
 
+    <!-- Hero -->
     <section id="inicio" class="hero">
         <h2>Luce con presencia</h2>
         <p>Reserva tu cita y disfruta de la mejor barbería de San Pedro de los Milagros.</p>
-        <a href="#contacto" class="boton">Agenda tu cita</a>
+        <a href="#agendar" class="boton">Agenda tu cita</a>
     </section>
 
+    <!-- Servicios -->
     <section id="servicios">
         <h2>Nuestros Servicios</h2>
         <div class="servicios-container">
@@ -38,21 +41,18 @@
                 <p class="precio">$20.000</p>
                 <p>El estilo que más te guste, con acabado profesional.</p>
             </div>
-
             <div class="servicio">
                 <i class="fa-solid fa-eye"></i>
                 <h3>Cejas</h3>
                 <p class="precio">$5.000</p>
                 <p>Definición y limpieza de cejas con técnica precisa.</p>
             </div>
-
             <div class="servicio">
                 <i class="fa-solid fa-user"></i>
                 <h3>Barba</h3>
                 <p class="precio">$12.000</p>
                 <p>Perfilado, afeitado y arreglo completo de barba.</p>
             </div>
-
             <div class="servicio">
                 <i class="fa-solid fa-mask-face"></i>
                 <h3>Mascarilla 5 pasos</h3>
@@ -62,13 +62,14 @@
         </div>
     </section>
 
+    <!-- Contacto -->
     <section id="contacto">
         <h2>Contáctanos</h2>
         <p>🪮 Cr 51 CL 49+9 Atras de la iglesia</p>
         <p>📧 Instagram: XXX </p>
     </section>
 
-    <!-- === FORMULARIO CON HORAS DISPONIBLES === -->
+    <!-- Formulario de cita -->
     <section id="agendar" class="formulario-cita">
         <h2>Agendar Cita</h2>
         <p>Selecciona el servicio, elige una hora disponible y deja tus datos 💈</p>
@@ -89,7 +90,6 @@
             
             <select id="hora" required>
                 <option value="">Selecciona una hora</option>
-                <!-- Se llena automáticamente desde Google Sheets -->
             </select>
 
             <button type="submit"><i class="fa-solid fa-calendar-check"></i> Reservar cita</button>
@@ -101,7 +101,7 @@
 <script>
 const SHEET_URL = "https://script.google.com/macros/s/AKfycbzWxWXF_K6SsCgtNEh4U1EJ0aCq2TZ4IswsqyxRMhscJPIiade4t94ClUCrcPM5ESx4MQ/exec";
 
-// Cargar horas disponibles desde Google Sheets
+// Cargar horas disponibles según fecha
 async function cargarHoras() {
     const fecha = document.getElementById("fecha").value;
     const selectHora = document.getElementById("hora");
@@ -113,12 +113,9 @@ async function cargarHoras() {
         const res = await fetch(`${SHEET_URL}?fecha=${fecha}`);
         const horasOcupadas = await res.json();
 
-        const horas = [
-            "11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", 
-            "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM"
-        ];
-
+        const horas = ["11:00 AM","12:00 PM","1:00 PM","2:00 PM","3:00 PM","4:00 PM","5:00 PM","6:00 PM","7:00 PM"];
         selectHora.innerHTML = "";
+
         horas.forEach(h => {
             const option = document.createElement("option");
             option.value = h;
@@ -129,27 +126,28 @@ async function cargarHoras() {
             }
             selectHora.appendChild(option);
         });
-
     } catch (error) {
-        console.error("Error al cargar horas:", error);
+        console.error(error);
         selectHora.innerHTML = "<option value=''>Error al cargar horas</option>";
     }
 }
 
 document.getElementById("fecha").addEventListener("change", cargarHoras);
 
-// Enviar datos al Google Sheet
+// Enviar cita
 document.getElementById("formCita").addEventListener("submit", async e => {
     e.preventDefault();
     const data = {
-        nombre: nombre.value,
-        telefono: telefono.value,
-        servicio: servicio.value,
-        fecha: fecha.value,
-        hora: hora.value
+        nombre: document.getElementById("nombre").value,
+        telefono: document.getElementById("telefono").value,
+        servicio: document.getElementById("servicio").value,
+        fecha: document.getElementById("fecha").value,
+        hora: document.getElementById("hora").value
     };
 
-    document.getElementById("estado").textContent = "Enviando...";
+    const estado = document.getElementById("estado");
+    estado.textContent = "Enviando...";
+
     try {
         const res = await fetch(SHEET_URL, {
             method: "POST",
@@ -157,10 +155,10 @@ document.getElementById("formCita").addEventListener("submit", async e => {
         });
 
         const text = await res.text();
-        document.getElementById("estado").textContent = text.includes("OK") ? 
-            "✅ Cita registrada con éxito" : "❌ Error al registrar la cita";
+        estado.textContent = text.includes("OK") ? "✅ Cita registrada con éxito" : "❌ Error al registrar la cita";
+        if(text.includes("OK")) document.getElementById("formCita").reset();
     } catch (error) {
-        document.getElementById("estado").textContent = "❌ Error al registrar la cita";
+        estado.textContent = "❌ Error al registrar la cita";
         console.error(error);
     }
 });
