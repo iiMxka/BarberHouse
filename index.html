@@ -99,7 +99,7 @@
     </section>
 
 <script>
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbyviF-qs6Ym3uI7AI0W9mLxllFa_XWMb-lChNCu3lxJ78jbsVbdYQ0cuXLv4CnnoO7Tig/exec";
+const SHEET_URL = "TU_URL_DE_GOOGLE_SCRIPT";
 
 // Cargar horas disponibles según fecha
 async function cargarHoras() {
@@ -111,10 +111,11 @@ async function cargarHoras() {
 
     try {
         const res = await fetch(`${SHEET_URL}?fecha=${fecha}`);
+        if(!res.ok) throw new Error("Error en la respuesta del servidor");
         const horasOcupadas = await res.json();
 
         const horas = ["11:00 AM","12:00 PM","1:00 PM","2:00 PM","3:00 PM","4:00 PM","5:00 PM","6:00 PM","7:00 PM"];
-        selectHora.innerHTML = "";
+        selectHora.innerHTML = "<option value=''>Selecciona una hora</option>";
 
         horas.forEach(h => {
             const option = document.createElement("option");
@@ -151,17 +152,24 @@ document.getElementById("formCita").addEventListener("submit", async e => {
     try {
         const res = await fetch(SHEET_URL, {
             method: "POST",
-            body: JSON.stringify(data)
+            body: JSON.stringify(data),
+            headers: { "Content-Type": "application/json" }
         });
 
         const text = await res.text();
-        estado.textContent = text.includes("OK") ? "✅ Cita registrada con éxito" : "❌ Error al registrar la cita";
-        if(text.includes("OK")) document.getElementById("formCita").reset();
+        if(text.includes("OK")) {
+            estado.textContent = "✅ Cita registrada con éxito";
+            document.getElementById("formCita").reset();
+            cargarHoras(); // recarga las horas bloqueadas
+        } else {
+            estado.textContent = "❌ Error al registrar la cita";
+        }
     } catch (error) {
-        estado.textContent = "❌ Error al registrar la cita";
         console.error(error);
+        estado.textContent = "❌ Error al registrar la cita";
     }
 });
+
 </script>
 </body>
 </html>
