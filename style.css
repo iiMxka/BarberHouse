@@ -1,260 +1,123 @@
-/* -------------------- Paleta de colores -------------------- */
-:root {
-    --dark-bg: #111;
-    --dark-gray: #1a1a1a;
-    --accent-color: #d4af37;
-    --text-color: #f5f5f5;
-    --secondary-text: #bbb;
-    --whatsapp-color: #25D366;
-}
-
-/* -------------------- Reset y tipografía -------------------- */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    scroll-behavior: smooth;
-}
-
 body {
-    font-family: 'Open Sans', sans-serif;
-    color: var(--text-color);
-    background-color: var(--dark-bg);
-    line-height: 1.6;
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    background-color: #111;
+    color: #fff;
+    padding-top: 70px; /* espacio para el header fijo */
 }
 
-/* -------------------- Header -------------------- */
+/* Header */
 header {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background-color: rgba(17,17,17,0.8);
-    backdrop-filter: blur(8px);
-    z-index: 1000;
-}
-
-nav {
+    background-color: #000;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 2rem;
+    padding: 15px 40px;
+    position: fixed; /* ahora siempre fijo */
+    top: 0;
+    width: 100%; /* necesario para fixed */
+    z-index: 1000; /* siempre encima de todo */
 }
 
-.logo {
-    font-family: 'Merriweather', serif;
-    font-size: 1.7rem;
-    color: var(--accent-color);
+header h1 {
+    color: #e0b05c;
 }
 
-.nav-links {
-    display: flex;
-    gap: 2rem;
+nav a {
+    color: white;
+    margin-left: 20px;
+    text-decoration: none;
+    font-weight: 500;
 }
 
-.nav-links a {
-    font-weight: 600;
-    color: var(--text-color);
-    transition: color 0.3s;
+nav a:hover {
+    color: #e0b05c;
 }
 
-.nav-links a:hover {
-    color: var(--accent-color);
-}
-
-/* -------------------- Hero -------------------- */
+/* Hero */
 .hero {
-    height: 100vh;
-    background: url('https://images.unsplash.com/photo-1572099606226-7f5b7b4e77e7?auto=format&fit=crop&w=1470&q=80') center/cover no-repeat;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     text-align: center;
-}
-
-.hero-overlay {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-}
-
-.hero-content {
+    padding: 120px 20px;
+    background: url('https://images.unsplash.com/photo-1600181953365-c2f6d3b0b41c') center/cover no-repeat;
     position: relative;
-    z-index: 2;
 }
 
-.hero h1 {
-    font-size: 3rem;
-    color: var(--accent-color);
-    margin-bottom: 1rem;
+.hero h2 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
 }
 
 .hero p {
-    font-size: 1.4rem;
-    color: var(--secondary-text);
-    margin-bottom: 1.5rem;
+    font-size: 1.2em;
 }
 
 .boton {
     display: inline-block;
-    background-color: var(--accent-color);
-    color: #111;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: transform 0.2s, background-color 0.3s;
+    margin-top: 20px;
+    padding: 12px 25px;
+    background-color: #e0b05c;
+    color: #000;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.3s;
 }
 
 .boton:hover {
-    background-color: #e5c966;
-    transform: scale(1.05);
+    background-color: #fff;
+    color: #000;
 }
 
-/* -------------------- Secciones -------------------- */
-section {
-    padding: 6rem 2rem 4rem 2rem;
-}
-
-h2 {
-    text-align: center;
-    color: var(--accent-color);
-    margin-bottom: 2rem;
-    font-family: 'Merriweather', serif;
-}
-
-/* -------------------- Servicios -------------------- */
+/* Servicios */
 #servicios {
-    background-color: var(--dark-gray);
+    text-align: center;
+    padding: 80px 20px;
 }
 
 .servicios-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
-    justify-items: center;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
 }
 
 .servicio {
     background-color: #222;
-    padding: 2rem;
-    border-radius: 12px;
-    width: 260px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    transition: transform 0.3s, box-shadow 0.3s;
+    padding: 20px;
+    border-radius: 10px;
+    width: 250px;
+}
+
+/* Galería */
+#galeria {
     text-align: center;
+    padding: 80px 20px;
 }
 
-.servicio i {
-    font-size: 2rem;
-    color: var(--accent-color);
-    margin-bottom: 1rem;
-}
-
-.servicio:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 14px rgba(0,0,0,0.5);
-}
-
-.precio {
-    color: #00e676;
-    font-weight: bold;
-    margin: 8px 0;
-}
-
-/* -------------------- Galería -------------------- */
-.gallery {
+.galeria-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 30px;
 }
 
-.gallery img {
+.galeria-grid img {
     width: 100%;
-    height: 200px;
+    border-radius: 10px;
     object-fit: cover;
-    border-radius: 8px;
-    opacity: 0.9;
-    transition: transform 0.3s, opacity 0.3s;
 }
 
-.gallery img:hover {
-    transform: scale(1.05);
-    opacity: 1;
-}
-
-/* -------------------- Contacto -------------------- */
-#contact {
-    background-color: var(--dark-gray);
+/* Contacto */
+#contacto {
     text-align: center;
+    padding: 80px 20px;
 }
 
-.contact {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    max-width: 500px;
-    margin: 0 auto;
-}
-
-.contact i {
-    color: var(--accent-color);
-    margin-right: 0.5rem;
-}
-
-/* -------------------- Footer -------------------- */
+/* Footer */
 footer {
-    background-color: #0d0d0d;
+    background-color: #000;
     text-align: center;
-    padding: 1rem 0;
-    color: var(--secondary-text);
-    font-size: 0.9rem;
-}
-
-/* -------------------- Botón WhatsApp -------------------- */
-.whatsapp-btn {
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
-    background-color: var(--whatsapp-color);
-    color: white;
-    border-radius: 50%;
-    padding: 18px;
-    font-size: 36px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-    transition: transform 0.3s;
-}
-
-.whatsapp-btn:hover {
-    transform: scale(1.15);
-}
-
-/* -------------------- Animaciones -------------------- */
-.fade-in {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-}
-
-.fade-in.visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-/* -------------------- Responsive -------------------- */
-@media (max-width: 768px) {
-    .hero h1 {
-        font-size: 2.4rem;
-    }
-    .hero p {
-        font-size: 1.1rem;
-    }
-    .boton {
-        padding: 10px 20px;
-    }
+    padding: 15px;
+    font-size: 0.9em;
+    color: #ccc;
 }
