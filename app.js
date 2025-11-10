@@ -1,4 +1,4 @@
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbz065MhkIEg3MHpK6VqrEdcP0ySUU9p3jdEfx0fUIfKF87jOM1Ph7wuojn-MtuWcxOc5g/exec";
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbxpXYA9S7muel__ShUO2P704AoIA-tdd4uZ1qp2fhp0GFwk1NtsAaTcw_8ufGcmIVL_3g/exec";
 
 // Inicializar
 document.addEventListener('DOMContentLoaded', function() {
@@ -19,6 +19,7 @@ function cargarHoras() {
 
     var callbackName = 'cb_' + Date.now();
     window[callbackName] = function(horasOcupadas) {
+        console.log("📥 Horas recibidas:", horasOcupadas);
         var horas = ["11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM"];
         selectHora.innerHTML = "<option value=''>Selecciona una hora</option>";
         
@@ -40,10 +41,14 @@ function cargarHoras() {
 
     var script = document.createElement('script');
     script.src = SHEET_URL + '?fecha=' + fecha + '&callback=' + callbackName;
+    script.onerror = function() {
+        console.error("❌ Error cargando horas");
+        selectHora.innerHTML = "<option value=''>Error al cargar horas</option>";
+    };
     document.head.appendChild(script);
 }
 
-// Enviar cita - MÉTODO QUE SÍ FUNCIONA
+// Enviar cita - CON MÁS DEBUG
 document.getElementById("formCita").addEventListener("submit", function(e) {
     e.preventDefault();
     
@@ -53,6 +58,8 @@ document.getElementById("formCita").addEventListener("submit", function(e) {
     var fecha = document.getElementById("fecha").value;
     var hora = document.getElementById("hora").value;
 
+    console.log("🔍 DATOS DEL FORMULARIO:", { nombre, telefono, servicio, fecha, hora });
+
     if (!hora || hora.includes("Ocupado")) {
         document.getElementById("estado").textContent = "❌ Selecciona una hora válida";
         return;
@@ -60,31 +67,55 @@ document.getElementById("formCita").addEventListener("submit", function(e) {
 
     var estado = document.getElementById("estado");
     estado.textContent = "Enviando...";
+    estado.style.color = "#333";
 
-    // MÉTODO CONFIRMADO: Imagen invisible + GET
-    var img = new Image();
+    console.log("📤 Preparando envío de cita...");
+
+    var callbackName = 'guardarCita_' + Date.now();
+    window[callbackName] = function(respuesta) {
+        console.log("📥 RESPUESTA COMPLETA DEL SERVIDOR:", respuesta);
+        console.log("📊 TIPO de respuesta:", typeof respuesta);
+        
+        if (respuesta && typeof respuesta === 'string' && respuesta.includes('OK')) {
+            console.log("✅ ÉXITO - Cita guardada");
+            estado.textContent = "✅ Cita guardada EXITOSAMENTE";
+            estado.style.color = "green";
+            document.getElementById("formCita").reset();
+            
+            setTimeout(function() {
+                if (fecha) cargarHoras();
+            }, 1000);
+        } else {
+            console.log("❌ ERROR - Respuesta del servidor:", respuesta);
+            estado.textContent = "❌ Error: " + (respuesta || 'Sin respuesta del servidor');
+            estado.style.color = "red";
+        }
+        
+        delete window[callbackName];
+    };
+
+    // Construir URL con parámetros
     var params = new URLSearchParams({
-        nombre: nombre,
-        telefono: telefono,
-        servicio: servicio,
-        fecha: fecha,
-        hora: hora
+        nombre: nombre || '',
+        telefono: telefono || '',
+        servicio: servicio || '',
+        fecha: fecha || '',
+        hora: hora || '',
+        callback: callbackName
     });
 
-    // Esto SÍ guarda en el Sheet
-    img.src = SHEET_URL + '?' + params.toString();
-    
-    // Éxito inmediato
-    estado.textContent = "✅ Cita enviada exitosamente";
-    estado.style.color = "green";
-    document.getElementById("formCita").reset();
-    
-    // Recargar horas después de 1 segundo
-    setTimeout(function() {
-        if (fecha) {
-            cargarHoras();
-        }
-    }, 1000);
+    var urlCompleta = SHEET_URL + '?' + params.toString();
+    console.log("🌐 URL enviada:", urlCompleta);
+
+    var script = document.createElement('script');
+    script.src = urlCompleta;
+    script.onerror = function() {
+        console.error("❌ Error cargando el script de cita");
+        estado.textContent = "❌ Error de conexión";
+        estado.style.color = "red";
+        delete window[callbackName];
+    };
+    document.head.appendChild(script);
 });
 
 // Evento para cargar horas
