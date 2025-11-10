@@ -2,7 +2,10 @@ const SHEET_URL = "https://script.google.com/macros/s/AKfycbxpXYA9S7muel__ShUO2P
 
 // Inicializar
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById("fecha").min = new Date().toISOString().split('T')[0];
+    var fechaInput = document.getElementById("fecha");
+    if (fechaInput) {
+        fechaInput.min = new Date().toISOString().split('T')[0];
+    }
 });
 
 // Cargar horas
@@ -17,34 +20,35 @@ function cargarHoras() {
 
     selectHora.innerHTML = "<option value=''>Cargando horas...</option>";
 
-    var callbackName = 'cb_' + Date.now();
-    window[callbackName] = function(horasOcupadas) {
-        console.log("🕒 Horas recibidas:", horasOcupadas);
+    var callbackName = 'horas_' + new Date().getTime();
+    window[callbackName] = function(respuesta) {
+        console.log("🕒 RESPUESTA HORAS:", respuesta);
+        
         var horas = ["11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM"];
         selectHora.innerHTML = "<option value=''>Selecciona una hora</option>";
         
         horas.forEach(function(hora) {
             var option = document.createElement("option");
             option.value = hora;
-            if (Array.isArray(horasOcupadas) && horasOcupadas.includes(hora)) {
+            option.textContent = hora;
+            
+            if (Array.isArray(respuesta) && respuesta.includes(hora)) {
                 option.disabled = true;
                 option.textContent = hora + " (Ocupado)";
                 option.style.color = "#999";
-            } else {
-                option.textContent = hora;
             }
+            
             selectHora.appendChild(option);
         });
         
         delete window[callbackName];
     };
 
+    var url = SHEET_URL + '?accion=cargar&fecha=' + encodeURIComponent(fecha) + '&callback=' + callbackName;
+    console.log("🔗 URL HORAS:", url);
+    
     var script = document.createElement('script');
-    script.src = SHEET_URL + '?fecha=' + encodeURIComponent(fecha) + '&callback=' + callbackName;
-    script.onerror = function() {
-        console.error("❌ Error cargando horas");
-        selectHora.innerHTML = "<option value=''>Error al cargar horas</option>";
-    };
+    script.src = url;
     document.head.appendChild(script);
 }
 
@@ -69,30 +73,29 @@ document.getElementById("formCita").addEventListener("submit", function(e) {
         return;
     }
 
-    console.log("🚀 Enviando cita:", {nombre, telefono, servicio, fecha, hora});
+    console.log("🚀 DATOS A ENVIAR:", {nombre, telefono, servicio, fecha, hora});
     mostrarEstado("⏳ Enviando cita...", "cargando");
 
-    var callbackName = 'guardarCita_' + Date.now();
+    var callbackName = 'cita_' + new Date().getTime();
     window[callbackName] = function(respuesta) {
-        console.log("📨 Respuesta del servidor:", respuesta);
+        console.log("📨 RESPUESTA CITA:", respuesta);
         
-        if (typeof respuesta === 'string' && respuesta.includes('OK')) {
+        if (typeof respuesta === 'string' && respuesta.includes('ÉXITO')) {
             mostrarEstado("✅ " + respuesta, "exito");
             document.getElementById("formCita").reset();
             
-            // Recargar horas después de 1 segundo
-            setTimeout(function() {
-                if (fecha) cargarHoras();
-            }, 1000);
+            // Recargar horas
+            setTimeout(cargarHoras, 1000);
         } else {
-            mostrarEstado("❌ Error: " + (respuesta || 'No se pudo guardar la cita'), "error");
+            mostrarEstado("❌ " + (respuesta || 'Error desconocido'), "error");
         }
         
         delete window[callbackName];
     };
 
-    // Construir URL
+    // Construir URL con parámetro explícito
     var url = SHEET_URL + '?' + 
+        'accion=guardar&' +
         'nombre=' + encodeURIComponent(nombre) +
         '&telefono=' + encodeURIComponent(telefono) +
         '&servicio=' + encodeURIComponent(servicio) +
@@ -100,15 +103,10 @@ document.getElementById("formCita").addEventListener("submit", function(e) {
         '&hora=' + encodeURIComponent(hora) +
         '&callback=' + callbackName;
 
-    console.log("🔗 URL enviada:", url);
+    console.log("🔗 URL CITA:", url);
     
     var script = document.createElement('script');
     script.src = url;
-    script.onerror = function() {
-        console.error("❌ Error de conexión");
-        mostrarEstado("❌ Error de conexión con el servidor", "error");
-        delete window[callbackName];
-    };
     document.head.appendChild(script);
 });
 
@@ -116,17 +114,7 @@ document.getElementById("formCita").addEventListener("submit", function(e) {
 function mostrarEstado(mensaje, tipo) {
     var estado = document.getElementById("estado");
     estado.textContent = mensaje;
-    
-    // Limpiar clases anteriores
-    estado.className = '';
-    
-    if (tipo === 'exito') {
-        estado.style.color = '#00e676';
-    } else if (tipo === 'error') {
-        estado.style.color = '#ff5252';
-    } else {
-        estado.style.color = '#e0b05c';
-    }
+    estado.className = tipo;
 }
 
 // Evento para cargar horas
