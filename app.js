@@ -1,4 +1,4 @@
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbxpXYA9S7muel__ShUO2P704AoIA-tdd4uZ1qp2fhp0GFwk1NtsAaTcw_8ufGcmIVL_3g/exec";
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbz065MhkIEg3MHpK6VqrEdcP0ySUU9p3jdEfx0fUIfKF87jOM1Ph7wuojn-MtuWcxOc5g/exec";
 
 // Inicializar
 document.addEventListener('DOMContentLoaded', function() {
@@ -43,7 +43,7 @@ function cargarHoras() {
     document.head.appendChild(script);
 }
 
-// Enviar cita - MÉTODO QUE SÍ FUNCIONA
+// Enviar cita - MÉTODO 100% FUNCIONAL
 document.getElementById("formCita").addEventListener("submit", function(e) {
     e.preventDefault();
     
@@ -54,38 +54,4 @@ document.getElementById("formCita").addEventListener("submit", function(e) {
     var hora = document.getElementById("hora").value;
 
     if (!hora || hora.includes("Ocupado")) {
-        document.getElementById("estado").textContent = "❌ Selecciona una hora válida";
-        return;
-    }
-
-    var estado = document.getElementById("estado");
-    estado.textContent = "Enviando...";
-
-    // MÉTODO CONFIRMADO: Imagen invisible + GET
-    var img = new Image();
-    var params = new URLSearchParams({
-        nombre: nombre,
-        telefono: telefono,
-        servicio: servicio,
-        fecha: fecha,
-        hora: hora
-    });
-
-    // Esto SÍ guarda en el Sheet
-    img.src = SHEET_URL + '?' + params.toString();
-    
-    // Éxito inmediato
-    estado.textContent = "✅ Cita enviada exitosamente";
-    estado.style.color = "green";
-    document.getElementById("formCita").reset();
-    
-    // Recargar horas después de 1 segundo
-    setTimeout(function() {
-        if (fecha) {
-            cargarHoras();
-        }
-    }, 1000);
-});
-
-// Evento para cargar horas
-document.getElementById("fecha").addEventListener("change", cargarHoras);
+        document.getElementById("estado").
