@@ -108,3 +108,5 @@ document.getElementById("formCita").addEventListener("submit", function(e) {
 
 // Evento para cargar horas
 document.getElementById("fecha").addEventListener("change", cargarHoras);
+
+
