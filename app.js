@@ -44,7 +44,7 @@ function cargarHoras() {
     document.head.appendChild(script);
 }
 
-// Enviar cita
+// Enviar cita - CORREGIDO
 document.getElementById("formCita").addEventListener("submit", function(e) {
     e.preventDefault();
     
@@ -69,16 +69,18 @@ document.getElementById("formCita").addEventListener("submit", function(e) {
     window[callbackName] = function(respuesta) {
         console.log("📥 RESPUESTA DEL SERVIDOR:", respuesta);
         
-        if (respuesta && respuesta.includes('OK')) {
-            estado.textContent = "✅ Cita guardada EXITOSAMENTE";
+        // ✅ CORRECCIÓN: Verificar si la respuesta contiene "OK"
+        if (respuesta && typeof respuesta === 'string' && respuesta.includes('OK')) {
+            estado.textContent = "✅ " + respuesta;
             estado.style.color = "green";
             document.getElementById("formCita").reset();
             
+            // Recargar horas después de guardar
             setTimeout(function() {
                 if (fecha) cargarHoras();
             }, 1000);
         } else {
-            estado.textContent = "❌ Error: " + (respuesta || 'Sin respuesta');
+            estado.textContent = "❌ Error: " + (respuesta || 'No se pudo guardar la cita');
             estado.style.color = "red";
         }
         
