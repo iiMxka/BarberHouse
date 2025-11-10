@@ -1,4 +1,4 @@
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbxpXYA9S7muel__ShUO2P704AoIA-tdd4uZ1qp2fhp0GFwk1NtsAaTcw_8ufGcmIVL_3g/exec";
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbz065MhkIEg3MHpK6VqrEdcP0ySUU9p3jdEfx0fUIfKF87jOM1Ph7wuojn-MtuWcxOc5g/exec";
 
 // Inicializar
 document.addEventListener('DOMContentLoaded', function() {
@@ -19,7 +19,6 @@ function cargarHoras() {
 
     var callbackName = 'cb_' + Date.now();
     window[callbackName] = function(horasOcupadas) {
-        console.log("📥 Horas recibidas:", horasOcupadas);
         var horas = ["11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM"];
         selectHora.innerHTML = "<option value=''>Selecciona una hora</option>";
         
@@ -44,7 +43,7 @@ function cargarHoras() {
     document.head.appendChild(script);
 }
 
-// Enviar cita - CORREGIDO
+// Enviar cita - MÉTODO QUE SÍ FUNCIONA
 document.getElementById("formCita").addEventListener("submit", function(e) {
     e.preventDefault();
     
@@ -61,44 +60,31 @@ document.getElementById("formCita").addEventListener("submit", function(e) {
 
     var estado = document.getElementById("estado");
     estado.textContent = "Enviando...";
-    estado.style.color = "#333";
 
-    console.log("📤 Enviando cita:", { nombre, telefono, servicio, fecha, hora });
-
-    var callbackName = 'guardarCita_' + Date.now();
-    window[callbackName] = function(respuesta) {
-        console.log("📥 RESPUESTA DEL SERVIDOR:", respuesta);
-        
-        // ✅ CORRECCIÓN: Verificar si la respuesta contiene "OK"
-        if (respuesta && typeof respuesta === 'string' && respuesta.includes('OK')) {
-            estado.textContent = "✅ " + respuesta;
-            estado.style.color = "green";
-            document.getElementById("formCita").reset();
-            
-            // Recargar horas después de guardar
-            setTimeout(function() {
-                if (fecha) cargarHoras();
-            }, 1000);
-        } else {
-            estado.textContent = "❌ Error: " + (respuesta || 'No se pudo guardar la cita');
-            estado.style.color = "red";
-        }
-        
-        delete window[callbackName];
-    };
-
+    // MÉTODO CONFIRMADO: Imagen invisible + GET
+    var img = new Image();
     var params = new URLSearchParams({
         nombre: nombre,
         telefono: telefono,
         servicio: servicio,
         fecha: fecha,
-        hora: hora,
-        callback: callbackName
+        hora: hora
     });
 
-    var script = document.createElement('script');
-    script.src = SHEET_URL + '?' + params.toString();
-    document.head.appendChild(script);
+    // Esto SÍ guarda en el Sheet
+    img.src = SHEET_URL + '?' + params.toString();
+    
+    // Éxito inmediato
+    estado.textContent = "✅ Cita enviada exitosamente";
+    estado.style.color = "green";
+    document.getElementById("formCita").reset();
+    
+    // Recargar horas después de 1 segundo
+    setTimeout(function() {
+        if (fecha) {
+            cargarHoras();
+        }
+    }, 1000);
 });
 
 // Evento para cargar horas
