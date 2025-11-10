@@ -19,14 +19,14 @@ function cargarHoras() {
 
     var callbackName = 'cb_' + Date.now();
     window[callbackName] = function(horasOcupadas) {
-        console.log("📥 Horas recibidas:", horasOcupadas);
+        console.log("🕒 Horas recibidas:", horasOcupadas);
         var horas = ["11:00 AM", "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM", "7:00 PM"];
         selectHora.innerHTML = "<option value=''>Selecciona una hora</option>";
         
         horas.forEach(function(hora) {
             var option = document.createElement("option");
             option.value = hora;
-            if (horasOcupadas.includes(hora)) {
+            if (Array.isArray(horasOcupadas) && horasOcupadas.includes(hora)) {
                 option.disabled = true;
                 option.textContent = hora + " (Ocupado)";
                 option.style.color = "#999";
@@ -40,7 +40,7 @@ function cargarHoras() {
     };
 
     var script = document.createElement('script');
-    script.src = SHEET_URL + '?fecha=' + fecha + '&callback=' + callbackName;
+    script.src = SHEET_URL + '?fecha=' + encodeURIComponent(fecha) + '&callback=' + callbackName;
     script.onerror = function() {
         console.error("❌ Error cargando horas");
         selectHora.innerHTML = "<option value=''>Error al cargar horas</option>";
@@ -48,75 +48,86 @@ function cargarHoras() {
     document.head.appendChild(script);
 }
 
-// Enviar cita - CON MÁS DEBUG
+// Enviar cita
 document.getElementById("formCita").addEventListener("submit", function(e) {
     e.preventDefault();
     
-    var nombre = document.getElementById("nombre").value;
-    var telefono = document.getElementById("telefono").value;
+    var nombre = document.getElementById("nombre").value.trim();
+    var telefono = document.getElementById("telefono").value.trim();
     var servicio = document.getElementById("servicio").value;
     var fecha = document.getElementById("fecha").value;
     var hora = document.getElementById("hora").value;
 
-    console.log("🔍 DATOS DEL FORMULARIO:", { nombre, telefono, servicio, fecha, hora });
-
-    if (!hora || hora.includes("Ocupado")) {
-        document.getElementById("estado").textContent = "❌ Selecciona una hora válida";
+    // Validaciones
+    if (!nombre || !telefono || !servicio || !fecha || !hora) {
+        mostrarEstado("❌ Completa todos los campos", "error");
         return;
     }
 
-    var estado = document.getElementById("estado");
-    estado.textContent = "Enviando...";
-    estado.style.color = "#333";
+    if (hora.includes("Ocupado")) {
+        mostrarEstado("❌ Selecciona una hora disponible", "error");
+        return;
+    }
 
-    console.log("📤 Preparando envío de cita...");
+    console.log("🚀 Enviando cita:", {nombre, telefono, servicio, fecha, hora});
+    mostrarEstado("⏳ Enviando cita...", "cargando");
 
     var callbackName = 'guardarCita_' + Date.now();
     window[callbackName] = function(respuesta) {
-        console.log("📥 RESPUESTA COMPLETA DEL SERVIDOR:", respuesta);
-        console.log("📊 TIPO de respuesta:", typeof respuesta);
+        console.log("📨 Respuesta del servidor:", respuesta);
         
-        if (respuesta && typeof respuesta === 'string' && respuesta.includes('OK')) {
-            console.log("✅ ÉXITO - Cita guardada");
-            estado.textContent = "✅ Cita guardada EXITOSAMENTE";
-            estado.style.color = "green";
+        if (typeof respuesta === 'string' && respuesta.includes('OK')) {
+            mostrarEstado("✅ " + respuesta, "exito");
             document.getElementById("formCita").reset();
             
+            // Recargar horas después de 1 segundo
             setTimeout(function() {
                 if (fecha) cargarHoras();
             }, 1000);
         } else {
-            console.log("❌ ERROR - Respuesta del servidor:", respuesta);
-            estado.textContent = "❌ Error: " + (respuesta || 'Sin respuesta del servidor');
-            estado.style.color = "red";
+            mostrarEstado("❌ Error: " + (respuesta || 'No se pudo guardar la cita'), "error");
         }
         
         delete window[callbackName];
     };
 
-    // Construir URL con parámetros
-    var params = new URLSearchParams({
-        nombre: nombre || '',
-        telefono: telefono || '',
-        servicio: servicio || '',
-        fecha: fecha || '',
-        hora: hora || '',
-        callback: callbackName
-    });
+    // Construir URL
+    var url = SHEET_URL + '?' + 
+        'nombre=' + encodeURIComponent(nombre) +
+        '&telefono=' + encodeURIComponent(telefono) +
+        '&servicio=' + encodeURIComponent(servicio) +
+        '&fecha=' + encodeURIComponent(fecha) +
+        '&hora=' + encodeURIComponent(hora) +
+        '&callback=' + callbackName;
 
-    var urlCompleta = SHEET_URL + '?' + params.toString();
-    console.log("🌐 URL enviada:", urlCompleta);
-
+    console.log("🔗 URL enviada:", url);
+    
     var script = document.createElement('script');
-    script.src = urlCompleta;
+    script.src = url;
     script.onerror = function() {
-        console.error("❌ Error cargando el script de cita");
-        estado.textContent = "❌ Error de conexión";
-        estado.style.color = "red";
+        console.error("❌ Error de conexión");
+        mostrarEstado("❌ Error de conexión con el servidor", "error");
         delete window[callbackName];
     };
     document.head.appendChild(script);
 });
+
+// Función auxiliar para mostrar estado
+function mostrarEstado(mensaje, tipo) {
+    var estado = document.getElementById("estado");
+    estado.textContent = mensaje;
+    
+    // Limpiar clases anteriores
+    estado.className = '';
+    
+    if (tipo === 'exito') {
+        estado.style.color = '#00e676';
+    } else if (tipo === 'error') {
+        estado.style.color = '#ff5252';
+    } else {
+        estado.style.color = '#e0b05c';
+    }
+}
 
 // Evento para cargar horas
 document.getElementById("fecha").addEventListener("change", cargarHoras);
